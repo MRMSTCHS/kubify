@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.14.7}
+TOOLS_DIR=${DIR}/.tools
+TERRAFORM=${TOOLS_DIR}/terraform
+
+mkdir -p $TOOLS_DIR
+
+MACHINE_TYPE=`uname -m`
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+  ARCH=amd64
+else
+  ARCH=i386
+fi
+
+if [[ "${OSTYPE}" == "darwin"* ]]; then
+  OS=darwin
+elif [[ "${OSTYPE}" == "linux"* ]]; then
+  OS=linux
+fi
+
+if [ -x "${ARCH}" ]; then
+  echo Unsupported architecture
+  exit 1
+fi
+
+if [ -x "${OS}" ]; then
+  echo Unsupported OS type
+  exit 1
+fi
+
+if [ ! -f "${TERRAFORM}" ] || [ `${TERRAFORM} version | head -n 1 | grep -E -o "(\d+\.)+\d+"` != "${TERRAFORM_VERSION}" ] ; then
+  TERRAFORM_URL=https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_${OS}_${ARCH}.zip
+  TERRAFORM_CHECKSUMS=https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS
+
+  cd $TMPDIR
+  wget ${TERRAFORM_URL}
+  wget ${TERRAFORM_CHECKSUMS}
+
+  EXPECTED=`cat terraform_${TERRAFORM_VERSION}_SHA256SUMS | grep terraform_${TERRAFORM_VERSION}_${OS}_${ARCH}.zip`
+  ACTUAL=`shasum -a 256 terraform_${TERRAFORM_VERSION}_${OS}_${ARCH}.zip`
+
+  if [ "${EXPECTED}" != "${ACTUAL}" ]; then
+    echo "Expected: ${EXPECTED}"
+    echo "Actual: ${ACTUAL}"
+    echo "Error: SHA checksum failed. Aborting"
+    exit 1
+  fi
+
+  unzip -o terraform_${TERRAFORM_VERSION}_${OS}_${ARCH}.zip -d $TOOLS_DIR
+  rm -f \
+    terraform_${TERRAFORM_VERSION}_${OS}_${ARCH}.zip \
+    terraform_${TERRAFORM_VERSION}_SHA256SUMS
+
+  cd -
+fi
+
+chmod +x $TERRAFORM
+cd $DIR
+env $TERRAFORM "$@"

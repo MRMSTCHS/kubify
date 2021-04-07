@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ -n "$SSH_PRIVATE_KEY" ]; then
+  echo "${SSH_PRIVATE_KEY}" >> priv_key && \
+  eval "$(ssh-agent -s)" && \
+  chmod 600 priv_key && \
+  ssh-add priv_key
+  rm -f priv_key
+fi
+
+ssh -T -oStrictHostKeyChecking=accept-new git@github.com || true
+/bin/terragrunt-binary "$@"

@@ -1,0 +1,81 @@
+---
+apiVersion: k8.kubify.local/v1
+kind: Config
+metadata:
+  name: auth-svc
+init:
+  scripts:
+  start: |
+    db:migrate
+    db:seed
+dev:
+  sync:
+    #always listening for code changes
+    #running unit tests on each save 
+    'src/**/**': '.'
+  scripts:
+    start: |
+      sleep 15
+      yarn nodemon start.js
+release:
+  scripts:
+    start: |
+      node start.js
+probes:
+  liveness:
+    httpGet:
+      path: /__health
+      port: 8080
+    initialDelaySeconds: 11
+    periodSeconds: 7
+  readiness:
+    httpGet:
+      path: /__health
+      port: 8080
+    initialDelaySeconds: 11
+    periodSeconds: 7
+config:
+  APP_NAME: auth-svc
+  ENV: "{{ env }}"
+  KUBIFY_ENV: "{{ env }}"
+profiles:
+  stage:
+    scaler:
+      minReplicas: 2
+      maxReplicas: 4
+      metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          targetAverageUtilization: 40
+    resources:
+      requests:
+        cpu: 256m
+        memory: 256Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+    dbs:
+      mongo:
+          version: v4.0
+          size: 1gb
+    crons:
+      script1:
+        schedule: * * * * *
+        script: ./crons/cron.sh
+  prod:
+    scaler:
+      minReplicas: 2
+      maxReplicas: 4
+      metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          targetAverageUtilization: 40
+    resources:
+      requests:
+        cpu: 256m
+        memory: 256Mi
+      limits:
+        cpu: 1
+        memory: 1Gi

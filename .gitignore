@@ -1,0 +1,15 @@
+.DS_Store
+**/.DS_Store
+# terraform
+*.tgz
+.terraform/
+terraform.state.d/
+*.backup
+terraform.tfstate
+remote_backend.tf
+*.terraform
+*.terragrunt-cache
+*.auto.tfvars
+*.rdb
+**/__pycache__
+tests/*.tif

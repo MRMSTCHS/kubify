@@ -1,0 +1,32 @@
+{% if package_json_file.stat.exists %}
+{% set builder_cmd = 'yarn' if yarn_lock_file.stat.exists else 'npm' %}
+
+FROM node:{{ package_json_node_version }}-alpine as builder
+RUN apk update
+RUN apk --no-cache add postgresql-dev jq curl bash g++ ca-certificates lz4-dev musl-dev cyrus-sasl-dev make python
+RUN apk add --no-cache --virtual .build-deps gcc zlib-dev libc-dev bsd-compat-headers py-setuptools bash
+RUN apk add --update findutils
+{% set install_script = kubify_config | json_query('dev.scripts.install') | default('echo', true)  %}
+RUN {{ install_script.split('\n') | join(';') }}
+ARG NPM_TOKEN
+WORKDIR /app
+RUN echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > /app/.npmrc
+COPY . .
+{% set build_script = kubify_config | json_query('dev.scripts.build') | default(none, true) %}
+{% if build_script is not none %}
+RUN {{ build_script.split('\n') | join('; ') }}
+{% else %}
+RUN {{ builder_cmd }} install --network-timeout 1000000 
+{% endif %}
+RUN mkdir -p /ops
+RUN echo '\
+{% set start_script = kubify_config | json_query('dev.scripts.start') %}
+{% if start_script is not none %}
+{{ start_script.split('\n') | join('; ') | replace('\'', '\'\"\'\"\'') | indent(width=4, indentfirst=true) }} \
+{% else %}
+    {{ builder_cmd }} run dev \
+{% endif %}' > /app/dev.sh
+RUN rm -f /app/.npmrc
+ENV PORT {{ app_port }}
+CMD ["sh", "dev.sh"]
+{% endif %}
