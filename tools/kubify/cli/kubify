@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Options
 export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
@@ -62,7 +62,8 @@ then
   echo "success: s3 bucket access working"
 else
   echo "could not find s3 bucket, so creating it"
-  aws s3api create-bucket --bucket $NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
+  # aws s3api create-bucket --bucket $NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
+  aws s3 mb s3://$NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
   aws s3api put-bucket-encryption --bucket $NAMING_PREFIX --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
   echo "s3 bucket encryption set"
 fi
@@ -799,7 +800,7 @@ function install {
       echo "NOTE: This might ask for your computer password (as it needs sudo)."
       ansible-playbook --connection=local \
         ${K8S_DIR}/k8s/ansible/install_linux.yaml \
-        --ask-become-pass -e ansible_python_interpreter=/usr/bin/python
+        --ask-become-pass -e ansible_python_interpreter=`which python3`
     } &> $KUBIFY_OUT
   else
     echo "'kubify install' not supported on $OSTYPE ... yet"

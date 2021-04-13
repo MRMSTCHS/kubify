@@ -1,6 +1,11 @@
 # Debug Things
 
+
+________________START WINDOWS INSTALL (until we automate these steps)____________________
+
+
 # Please note (for Windows support, you need to do this first):
+
 - install WSL2 (Ubuntu for Windows, the one created by Microsoft): #TODO: automate this flow using ansible
   - # if windows is on a VM, enable vXT (virtualization nesting)
   - # these steps: https://docs.microsoft.com/en-us/windows/wsl/install-win10
@@ -17,17 +22,30 @@
 IMPORTANT NOTE (choose Ubuntu 20, not Debian, due to Docker-Desktop Debian known networking automation bug):
 ![Use Ubuntu with WSL2](./docs/img/DEBUG_md_imgs/000002/wsl2_use_ubuntu.png)
 
-
-next steps would be (same as other OSs):
+Now that Ubuntu for Windows is installed (only need to install once), let's use Kubify:
 ```
+# open powershell and run:
+wsl -d Ubuntu-20.04
 # example env setters
 KUBIFY_DEBUG=1
-KUBIFY_CONTAINER_REGISTRY=ecr 
+KUBIFY_CONTAINER_REGISTRY=ecr
 # example commands to start
-cd ~/git/kubify:
+cd /mnt/c/Users/w/git/kubify
 export PATH=$PATH:$(pwd)/tools/kubify/cli
 kubify up
 ```
+
+
+____________________________________________________________________________________________
+
+
+# Issue 000003 (): bash linebreaks error
+
+If a bash file (or other files really) was ever saved on Windows, generally in the world of coding that means you might need to dos2unix that bash file
+Recursive before commit: `find . -type f -print0 | xargs -0 dos2unix`
+
+
+# Important Note (until we fix this edge case that might come back up)
 
 This software is alpha mode and you must do this as a hard reset for local environment
 Docker-Desktop -> Prefrences -> Resources Disk Image Size, make volume smaller and apply

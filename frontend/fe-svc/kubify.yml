@@ -15,7 +15,7 @@ dev:
       export PATH=$PATH:/app/node_modules/.bin
       cd /app
       apk update || true 
-      apk add python || true
+      apk add python3 || true
       yarn start || true
       cd public && python3 -m http.server 8080 #TODO: REMOVE THIS TESTING LINE!     
 service:

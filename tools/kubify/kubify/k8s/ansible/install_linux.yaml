@@ -32,8 +32,6 @@
       # for timeout command on delete
       - coreutils
       - npm
-      # for WSL2 missing the systemd init:
-      - systemd-genie
       # just in case IDEs are putting extra characters on Windows when saving files
       - dos2unix
       - wget
