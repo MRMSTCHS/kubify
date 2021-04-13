@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Options
+export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
+export ENV=${ENV:-dev}
+
+
 # install awscli when it does not exist, since this is before the ansible
 # TODO: put this in the right place or have modifiers per OS
 aws --version || sudo apt-get update && sudo apt install -y awscli | true
@@ -19,10 +24,6 @@ WORK_DIR=${SRC_DIR}/._kubify_work
 K8S_DIR=${SRC_DIR}/tools/kubify/kubify
 mkdir -p $WORK_DIR
 alias kubify=${DIR}/kubify
-
-# Options
-export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
-export ENV=${ENV:-dev}
 
 # Flags
 KUBIFY_ENGINE=${KUBIFY_ENGINE:-local}         # Options: local or minikube
@@ -56,10 +57,14 @@ fi
 
 # in case the bucket is aleady created or if we created it in the infra folder using terraform (since that runs first)
 echo "checking access to artifacts s3 bucket to exist, creating it (with encryption at rest enabled) if it does not exist.."
-if aws s3 ls "s3://$NAMING_PREFIX" 2>&1 | grep -q 'NoSuchBucket'
+if aws s3 ls "s3://$NAMING_PREFIX"
 then
+  echo "success: s3 bucket access working"
+else
+  echo "could not find s3 bucket, so creating it"
   aws s3api create-bucket --bucket $NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
   aws s3api put-bucket-encryption --bucket $NAMING_PREFIX --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
+  echo "s3 bucket encryption set"
 fi
 
 # CI Parameters
@@ -426,6 +431,7 @@ function get_npm_secret_direct() {
 
     echo ${NPM_TOKEN}
   fi
+
 }
 
 function get_npm_secret() {
@@ -722,7 +728,7 @@ function configure {
   {
     SRC_MOUNT_PATTERN=`echo "$SRC_MOUNT" | sed 's/\\//\\\\\//g'`
     HOME_MOUNT_PATTERN=`echo "$HOME_MOUNT" | sed 's/\\//\\\\\//g'`
-        if [[ "$KUBIFY_CONTAINER_REGISTRY" == "dockerhub" ]]; then
+    if [[ "$KUBIFY_CONTAINER_REGISTRY" == "dockerhub" ]]; then
         ENTRYPOINT_TEMPLATE=`cat "$MANIFESTS/entrypoint.yaml" | sed "s/{{SRC_MOUNT}}/$SRC_MOUNT_PATTERN/g" | sed "s/{{HOME_MOUNT}}/$HOME_MOUNT_PATTERN/g"`
     elif [[ "$KUBIFY_CONTAINER_REGISTRY" == "ecr" ]]; then
         ENTRYPOINT_TEMPLATE=`cat "$MANIFESTS/entrypoint_s3.yaml" | sed "s/{{SRC_MOUNT}}/$SRC_MOUNT_PATTERN/g" | sed "s/{{HOME_MOUNT}}/$HOME_MOUNT_PATTERN/g"`

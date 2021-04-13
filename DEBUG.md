@@ -29,6 +29,10 @@ export PATH=$PATH:$(pwd)/tools/kubify/cli
 kubify up
 ```
 
+This software is alpha mode and you must do this as a hard reset for local environment
+Docker-Desktop -> Prefrences -> Resources Disk Image Size, make volume smaller and apply
+This is important if you get stuck installing kubeDB (from a previously failed version)
+
 # Issue 000001 (): If namespace deletion is stuck locally in docker desktop's kubernetes:
 STATUS: 
 This can be RESOLVED with manual click (see image below), but the TECH DEBT automation of this fix is TODO (I/We should automate this fix)

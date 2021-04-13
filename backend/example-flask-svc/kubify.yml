@@ -1,0 +1,77 @@
+---
+apiVersion: k8.kubify.local/v1
+kind: Config
+metadata:
+  name: example-python
+init: |
+  cd /app
+  while ! curl http://${DB_HOST}:5432/ 2>&1 | grep '52';   do     echo "db ${DB_HOST} (postgres database) port 5432 not responding yet, will check it again in 2 seconds" && sleep 2;   done
+  if [ -z "$DB_USERNAME" ] && [ ! -z "$POSTGRES_USER" ]; then       export DB_USERNAME=$POSTGRES_USER; fi
+  if [ -z "$DB_PASSWORD" ] && [ ! -z "$POSTGRES_PASSWORD" ]; then       export DB_PASSWORD=$POSTGRES_PASSWORD; fi
+  yarn sequelize db:migrate --env $ENV || true
+  if [ $ENV = "dev" ]; then     echo "seeding, since this is local or dev";     yarn sequelize db:seed:all --seeders-path /app/app/db/seeders/development --env $ENV || true; else     echo "skipping seeding, since this is not local or dev"; fi
+dev:
+  # Customize this to your application's sources.
+  # local files synced to pods instead of triggering an image build when modified.
+  # This is a mapping of local files to sync to remote folders.
+  sync:
+    'app/***': 'app/'
+  scripts:
+    # The start script is basically describing how to start the container
+    start: |
+      cd /app
+      K8_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+      K8_CHECK_INIT_CMD="curl -sSk -H \"Authorization: Bearer ${K8_TOKEN}\" https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_PORT_443_TCP_PORT/api/v1/namespaces/mono/pods | jq '.items[] | select(.metadata.generateName==\"be-svc-init-\")' | jq --raw-output '.status.phase' | grep \"Running\""
+      while eval ${K8_CHECK_INIT_CMD}; do echo "be-svc-init (migrating/seeding container) still running, will check it again in 5 seconds" && sleep 5; done
+      unset K8_TOKEN
+      unset K8_CHECK_INIT_CMD
+      if [ -z "$DB_USERNAME" ] && [ ! -z "$POSTGRES_USER" ]; then       export DB_USERNAME=$POSTGRES_USER; fi
+      if [ -z "$DB_PASSWORD" ] && [ ! -z "$POSTGRES_PASSWORD" ]; then       export DB_PASSWORD=$POSTGRES_PASSWORD; fi
+      yarn sequelize db:migrate --env $ENV
+      if [ $ENV = "dev" ]; then     echo "seeding, since this is local or dev";     yarn sequelize db:seed:all --seeders-path /app/app/db/seeders/development --env $ENV; else     echo "skipping seeding, since this is not local or dev"; fi
+      yarn nodemon app/server.js
+release:
+  scripts:
+    start: |
+      cd /app
+      while ! curl http://${DB_HOST}:5432/ 2>&1 | grep '52';   do     echo "db ${DB_HOST} (postgres database) port 5432 not responding yet, will check it again in 2 seconds" && sleep 2;   done
+      if [ -z "$DB_USERNAME" ] && [ ! -z "$POSTGRES_USER" ]; then       export DB_USERNAME=$POSTGRES_USER; fi
+      if [ -z "$DB_PASSWORD" ] && [ ! -z "$POSTGRES_PASSWORD" ]; then       export DB_PASSWORD=$POSTGRES_PASSWORD; fi
+      yarn sequelize db:migrate --env $ENV
+      if [ $ENV = "dev" ]; then    echo "seeding, since this is local or dev";     yarn sequelize db:seed:all --seeders-path /app/app/db/seeders/development --env $ENV; else     echo "skipping seeding, since this is not local or dev"; fi
+      node app/server.js
+config:
+  PORT: "8000"
+  APP_NAME: example-python
+  DB_HOST: example-python-postgres
+  DB_NAME: example-python-svc
+  DD_SERVICE_NAME: example-python-svc
+  DEBUG: "example-python-svc:*"
+  ENV: "{{ env }}"
+  KUBIFY_ENV: "{{ env }}"
+profiles:
+  dev:
+    databases:
+      postgres:
+        type: postgres
+        version: "10.2-v2"
+        size: 1Gi
+        init:
+          script: |
+            CREATE DATABASE "example-python-svc"
+    scaler:
+      minReplicas: 2
+      maxReplicas: 4
+      metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          targetAverageUtilization: 40
+    resources:
+      requests:
+        cpu: 64m
+        memory: 64Mi
+      limits:
+        cpu: 128m
+        memory: 128Mi
+    
