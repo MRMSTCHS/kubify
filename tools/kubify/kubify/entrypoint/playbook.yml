@@ -60,6 +60,7 @@
       pip:
         name: awscli
         version: "{{ AWS_CLI_VERSION }}"
+        executable: pip3
 
     - name: Download terraform
       get_url:

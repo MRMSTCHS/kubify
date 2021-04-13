@@ -13,31 +13,31 @@ Kubify is a CLI tool to manage the development and deployment lifecycle of micro
 
 ```
 
-# add kubify cli tool the path (so you can type kubify commands)
-# or add this to your ~/.profile
-# TODO: automate this with ansible auto add to path
-# TODO: or put in alias in root of repo and change all the references to relative paths
+## Configure Env ##
+
+export KUBIFY_DEBUG=1
+export KUBIFY_CONTAINER_REGISTRY=ecr
+export UNIQUE_COMPANY_ACRONYM=pt
+
+## Setup ##
+
 export PATH=$PATH:$(pwd)/tools/kubify/cli 
 
 #install/configure/re-configure your local workstation with a proper cluster (including all pre-reqs automated)
 kubify up
-```
 
 
+## Local Testing ##
 
-# Local Testing
-
-
-
-```
 #start all services locally (entire infra running locally)
 kubify start-all 
 
 #cd into a specific service
-cd fe-svc
+cd backend/backend-svc
 
 #listens for code changes, shows logs, runs unit tests (on each code save), opens and auto-configures IDE
 kubify start
+
 ```
 
 
@@ -85,8 +85,10 @@ If you are on Windows, please use Ubuntu for Windows (on the Windows App Store) 
 
 If you want to learn the commands that the kubify wrapper is running: `KUBIFY_DEBUG=1 kubify {args}`
 
-Example: `KUBIFY_DEBUG=1 KUBIFY_CONTAINER_REGISTRY=ecr kubify up`
 
+
+Example: `KUBIFY_DEBUG=1 KUBIFY_CONTAINER_REGISTRY=ecr UNIQUE_COMPANY_ACRONYM=os kubify up`
+    - NOTE: UNIQUE_COMPANY_ACRONYM should be unique
 
 
 # Secrets Editing Examples

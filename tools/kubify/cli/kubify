@@ -752,6 +752,8 @@ function configure {
     sleep 5
   done
 
+  echo 'SUCCESS: What a rush!! You just saves years of precious coding time (AUTOMATED DEVOPS)!! Kubify for life!!'
+
   # echo "Creating shared redis instance...."
   # until $KUBECTL_NS apply -f ${K8S_DIR}/k8s/redis.yaml 2> /dev/null; do
   #   echo "Waiting for kubedb to download dependencies...."
@@ -892,7 +894,9 @@ function local_env_running {
   RUNNING=`check_local_env`
 
   # debian fix for ansible-playbook missing after install (TODO: is this the right location for this)
-  source ~/.profile || true
+  if [ -f "~/.profile" ]; then
+    source ~/.profile || true
+  fi
 
   if [ -z "${RUNNING}" ]
   then

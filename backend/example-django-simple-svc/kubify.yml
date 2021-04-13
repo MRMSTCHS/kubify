@@ -17,7 +17,7 @@ dev:
 release:
   scripts:
     start: |
-      gunicorn myproject.wsgi
+      # gunicorn myproject.wsgi
       python manage.py runserver  0.0.0.0:8000
 config:
   PORT: "8000"

@@ -161,7 +161,6 @@
       become: yes
       pip:
         name: "{{ pip_packages }}"
-
         executable: pip3
 
     - name: install via npm
