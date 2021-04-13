@@ -1,5 +1,34 @@
 # Debug Things
 
+# Please note (for Windows support, you need to do this first):
+- install WSL2 (Ubuntu for Windows, the one created by Microsoft): #TODO: automate this flow using ansible
+  - # if windows is on a VM, enable vXT (virtualization nesting)
+  - # these steps: https://docs.microsoft.com/en-us/windows/wsl/install-win10
+    - `dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart` #on powershell
+    - `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart` #on powershell
+    - `wsl --set-default-version 2` #on powershell
+  - # Install Ubuntu for Windows (by Microsoft, from Microsoft App Store): https://www.microsoft.com/store/apps/9n6svws3rx71
+    - # If you have the Microsoft Store blocked (common): https://docs.microsoft.com/en-us/windows/wsl/install-manual
+  - # Then install Docker Desktop (with the WSL2 checkmark enabled!!): https://docs.docker.com/docker-for-windows/wsl/
+  - `./tools/kubify/cli/scripts/windows-wsl2-enable-systemctl-v2.sh` #on wsl2
+  - Docker Desktop Settings -> Enable Kubernetes -> Apply
+  - Be sure you covered these steps: https://kubernetes.io/blog/2020/05/21/wsl-docker-kubernetes-on-the-windows-desktop/
+
+IMPORTANT NOTE (choose Ubuntu 20, not Debian, due to Docker-Desktop Debian known networking automation bug):
+![Use Ubuntu with WSL2](./docs/img/DEBUG_md_imgs/000002/wsl2_use_ubuntu.png)
+
+
+next steps would be (same as other OSs):
+```
+# example env setters
+KUBIFY_DEBUG=1
+KUBIFY_CONTAINER_REGISTRY=ecr 
+# example commands to start
+cd ~/git/kubify:
+export PATH=$PATH:$(pwd)/tools/kubify/cli
+kubify up
+```
+
 # Issue 000001 (): If namespace deletion is stuck locally in docker desktop's kubernetes:
 STATUS: 
 This can be RESOLVED with manual click (see image below), but the TECH DEBT automation of this fix is TODO (I/We should automate this fix)
@@ -17,11 +46,32 @@ Investigation:
         - https://kubedb.com/docs/v2021.03.17/guides/postgres/initialization/script_source/
     - RESOLUTION: I hard reset my local Docker Desktop's K8s to fix this:
 ![Reset Local K8s](./docs/img/DEBUG_md_imgs/000001/reset_docker_desktop_k8s_stack.png)
+It is also useful to install the WSL2 plugin for VSCode #TODO: automate this too
+And make sure to to this: https://docs.docker.com/docker-for-windows/wsl/ and then restart your session #TODO: automate this
 
-
-# Issue 000002 (): If WSL2 Is Not Enabled (While Trying to Install Debian for Windows on Microsoft Store):
-If WSL2 (Windows Feature) is not enabled: Control Panel -> Programs -> Turn Windows Features on -> Checkmark "Linux Sub-System for Windows", Click Ok, Click Restart (when prompted) -> Open Microsoft Store (or manually/silently using https://docs.microsoft.com/en-us/windows/wsl/install-manual) again and try install of Debian For Windows again:
+# Issue 000002 (): If WSL2 Is Not Enabled (While Trying to Install Ubuntu for Windows on Microsoft Store):
+Install pre-reqs: #TODO: automate these 2 installs (since they are already automated on Mac)
+  * https://hub.docker.com/editions/community/docker-ce-desktop-windows/
+  * https://code.visualstudio.com/Download
+If WSL2 (Windows Feature) is not enabled: Control Panel -> Programs -> Turn Windows Features on -> Checkmark "Linux Sub-System for Windows", Click Ok, Click Restart (when prompted) -> Open Microsoft Store (or manually/silently using https://docs.microsoft.com/en-us/windows/wsl/install-manual) again and try install of Ubuntu for Windows again:
 ![Install Missing WSL2](./docs/img/DEBUG_md_imgs/000002/wsl2_not_installed.png)
+that will use wsl1, we myst them upgrade it to wsl2 (TODO: automate all this for windows users)
+you might need to enable nested hypervisor, if you are running Windows in a VM:
+![Install Nested WSL2](./docs/img/DEBUG_md_imgs/000002/wsl2_enable_nested_on_hypervisor.png)
+```
+PS C:\Users\w> wsl --list --verbose
+  NAME      STATE           VERSION
+* Debian    Running         1
+PS C:\Users\w> wsl.exe --set-version Debian 2
+Conversion in progress, this may take a few minutes...
+For information on key differences with WSL 2 please visit https://aka.ms/wsl2
+WSL 2 requires an update to its kernel component. For information please visit https://aka.ms/wsl2kernel
+PS C:\Users\w>
+```
+so to fix this: to upgrade wsl1 to wsl2 (for windows users)
+follow this https://docs.microsoft.com/en-us/windows/wsl/install-win10#step-4---download-the-linux-kernel-update-package
+  microsoft will have you install: https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi
+for more info: https://docs.docker.com/docker-for-windows/wsl/#download
 
 #kubedb local reset
     docker docker settings -> resources -> make the disk size limit smaller -> apply (hard reset your k8s local stack for the win)
@@ -75,3 +125,5 @@ kubify _generate_manifests
 #interactive bash terminal into any pod https://kubernetes.io/docs/tasks/debug-application-cluster/get-shell-running-container/
 kubectl -n kubify exec --stdin --tty entrypoint-c45cz98z9-1jlwa -- /bin/bash
 ```
+
+

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# install awscli when it does not exist, since this is before the ansible
+# TODO: put this in the right place or have modifiers per OS
+aws --version || sudo apt-get update && sudo apt install -y awscli | true
+
 UNIQUE_COMPANY_ACRONYM=${UNIQUE_COMPANY_ACRONYM:-os}
 export NAMING_PREFIX=$UNIQUE_COMPANY_ACRONYM-$ENV-kubify
 
@@ -9,6 +13,8 @@ export AWS_PROFILE=${KUBIFY_AWS_PROFILE:-default}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SRC_DIR=`echo "$(cd "$(dirname "$DIR/../../../..")"; pwd)"`
 KUBIFY_CURRENT_VERSION=`git --git-dir=${SRC_DIR}/.git rev-parse --verify HEAD --short`
+# NOTE (where to put generated files & cache): 
+# command > ${WORK_DIR}/file.extension (in the ${WORK_DIR}/file.extension location)
 WORK_DIR=${SRC_DIR}/._kubify_work
 K8S_DIR=${SRC_DIR}/tools/kubify/kubify
 mkdir -p $WORK_DIR
@@ -32,8 +38,10 @@ KUBIFY_UPSTREAM_ENV_ACCOUNT="arn:aws:eks:${AWS_REGION}:${AWS_ACCOUNT_NUMBER}"
 KUBIFY_NPM_CREDENTIALS_SECRET="npm-credentials"
 
 # Dynamic Defaults
-aws sts get-caller-identity || aws configure # login aws if not already logged in
-AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
+cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID | grep -Eo '[0-9]{1,12}' || aws sts get-caller-identity || aws configure # login aws if not already logged in
+# NOTE: to clear AWS Account ID value cache file: rm -rf ./._kubify_work/env_var__cache__AWS_ACCOUNT_ID
+cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID | grep -Eo '[0-9]{1,12}' || aws sts get-caller-identity --query Account --output text > ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID
+AWS_ACCOUNT_ID=`cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID`
 AWS_ACCESS_KEY_ID=`aws configure get default.aws_access_key_id`
 AWS_SECRET_ACCESS_KEY=`aws configure get default.aws_secret_access_key`
 
@@ -776,9 +784,9 @@ function install {
       if ! [ -x "$(command -v ansible)" ]; then
         if ! [ -x "$(command -v pip)" ]; then
           sudo apt update
-          sudo apt install -y python-pip
+          sudo apt install -y python3-pip
         fi
-        pip install ansible
+        pip3 install ansible
       fi
       echo "NOTE: This might ask for your computer password (as it needs sudo)."
       ansible-playbook --connection=local \
@@ -876,6 +884,9 @@ function check_local_env {
 
 function local_env_running {
   RUNNING=`check_local_env`
+
+  # debian fix for ansible-playbook missing after install (TODO: is this the right location for this)
+  source ~/.profile || true
 
   if [ -z "${RUNNING}" ]
   then

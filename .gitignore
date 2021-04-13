@@ -1,5 +1,15 @@
+._kubify_work
+**/._kubify_work
+._*
+
+# mac
 .DS_Store
 **/.DS_Store
+Thumbs.db
+**/Thumbs.db
+.Spotlight-V100
+.Trashes
+
 # terraform
 *.tgz
 .terraform/
@@ -18,6 +28,16 @@ tests/*.tif
 .pytest_cache/
 **/.pytest_cache
 
+# Compiled Python files
+*.pyc
+
+# Compiled C++ files
+*.out
+
+# Application specific files
+venv
+node_modules
+.sass-cache
 
 #binaries forsure
 tools/kubify/atlantis/bootstrap/terraform

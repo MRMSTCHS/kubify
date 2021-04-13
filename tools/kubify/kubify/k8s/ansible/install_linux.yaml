@@ -1,4 +1,4 @@
-- name: Install kubify required tools on Linux
+- name: Install required Kubify tools & deps on Debian (or Ubuntu, WSL2, .. for workstation or cicd)
   # hosts: all
   hosts: localhost
   vars:
@@ -6,14 +6,14 @@
     kubetail_url: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     kubesec_version: 0.9.2
     skaffold_version: 1.21.0
-    kubecfg_version: 0.17.0
-    helm_version: 3.5.2
-    helmfile_version: 0.138.4
+    kubecfg_version: 0.18.0
+    helm_version: 3.5.3
+    helmfile_version: 0.138.7
     kind_version: 0.10.0
     kubesec_url: https://github.com/shyiko/kubesec/releases/download/{{ kubesec_version }}/kubesec-{{ kubesec_version }}-linux-amd64
     skaffold_url: https://storage.googleapis.com/skaffold/releases/v{{ skaffold_version }}/skaffold-linux-amd64
     kubecfg_url: https://github.com/bitnami/kubecfg/releases/download/v{{ kubecfg_version }}/kubecfg-linux-amd64
-    helm_url: https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm_version }}-linux-amd64.tar.gz
+    helm_url: https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz
     helmfile_url: https://github.com/roboll/helmfile/releases/download/v{{ helmfile_version }}/helmfile_linux_amd64
     minikube_url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
     kubectx_url: https://raw.githubusercontent.com/ahmetb/kubectx/master/kubectx
@@ -24,11 +24,20 @@
       - python3-setuptools
       - python3-pip
       - jq
-      - docker-ce
+      # TODO: automte this: only if docker is not installed, but never on WSL2, for now commenting (make sure docker-ce is installed on CICD Dockerfile in the meantime) .... for now I am commenting docker-ce dependancy as a workaround (until I automate this flow)
+      # NOTE: on WSL2: you must first: enable WSL1, install WSL2, upgrade to WSL2, Install Ubuntu for Windows from Microsoft, open Ubuntu for Windows, make sure it's upgraded to WSL2, make sure install Docker Desktop (and that will install docker into that WSL2 Debian distro mapped to host Docker Desktop and host Kubernetes on the Windows side)
+      # - docker-ce
       - kubectl
       - socat
       # for timeout command on delete
       - coreutils
+      - npm
+      # for WSL2 missing the systemd init:
+      - systemd-genie
+      # just in case IDEs are putting extra characters on Windows when saving files
+      - dos2unix
+      - wget
+      - curl
 
     pip_packages:
       - yq

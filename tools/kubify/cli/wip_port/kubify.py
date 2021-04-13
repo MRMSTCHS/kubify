@@ -737,8 +737,8 @@ def install(*argv):
             data_pip = out("command -v pip")
             if not data_pip:
                 out(f"sudo apt update")
-                out(f"sudo apt install -y python-pip")
-            out("pip install ansible")
+                out(f"sudo apt install -y python3-pip")
+            out("pip3 install ansible")
         out(f"ansible-playbook --connection=local \
                 {K8S_DIR}/k8s/ansible/install_linux.yaml \
                 --ask-become-pass -e ansible_python_interpreter=/usr/bin/python")

@@ -19,7 +19,7 @@ On Prem
 # OSs
 Mac (full compatibility, all things work, AWESOME)
 Linux (currently fully compatible for CICD purposes, but need to get it to 100% compatiblity #TODO)
-Windows WSL1/2 (Debian For Windows, from Microsoft) (in progress, need to get it to 100% compatiblity #TODO)
+Windows WSL1/2 (Ubuntu for Windows, from Microsoft) (in progress, need to get it to 100% compatiblity #TODO)
 
 # Project Management
 PM board (that we should all be using for OS contribution efforts): https://github.com/willyguggenheim/kubify/projects/1

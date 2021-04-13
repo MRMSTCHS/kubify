@@ -1,5 +1,5 @@
 ---
-- name: Install MacOS Packages
+- name: Install required Kubify tools & deps on MacOSx (for workstation or cicd)
   hosts: localhost
   vars:
     local_bin: /usr/local/bin
@@ -30,6 +30,7 @@
       # - kubesec #TODO: uncomment after they fix this public package (brew install kubesec - is broken at the moment)
       - dnsmasq
       - watch
+      - npm
     node_packages:
       - json-diff
     install_homebrew_if_missing: true
