@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 cd "${0%/*}"
 
 if [[ ! -f DevOps\ in\ Python.tif ]]; then

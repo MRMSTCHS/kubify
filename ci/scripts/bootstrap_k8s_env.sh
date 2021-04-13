@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 MY_PATH="`dirname \"$0\"`"
 source ${MY_PATH}/0_common_init.sh

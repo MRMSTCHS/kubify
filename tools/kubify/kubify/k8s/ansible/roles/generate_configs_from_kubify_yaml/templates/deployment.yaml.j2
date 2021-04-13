@@ -66,7 +66,7 @@ data:
   environment: "{{ kubify_domain_env }}"
 {% if init_script|length %}
   init.sh: |
-    #!/bin/bash
+    #!/usr/bin/env bash
     {{ init_script.split('\n') | join('; ') }}
 {% endif %}
 ---

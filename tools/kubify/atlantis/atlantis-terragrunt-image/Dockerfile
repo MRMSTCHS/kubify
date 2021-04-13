@@ -6,7 +6,7 @@ ARG TERRAGRUNT_VERSION
 ARG TERRAFORM_VERSION
 
 RUN apk -v --update add \
-        python \
+        python3 \
         py-pip \
         groff \
         less \
