@@ -1,10 +1,15 @@
 #feature #1: APM with ISTIO
 #feature #2: Auto-Configure IDE Debugger on "kubify debug"  
 #more features that come to mind:
+- migrate to using docker cmd for all cli commands (so it runs anywhere smoothly, less porting)
 - fix WSL2 windows
+  - also automate this current pre-req flow: 
+      - on WSL2: you must first (before running kubify up for the first time on Windows): enable WSL1, install WSL2, upgrade to WSL2, Install Ubuntu for Windows from Microsoft, open Ubuntu for Windows, make sure it's upgraded to WSL2, make sure install Docker Desktop (and that will install docker into that WSL2 Debian distro mapped to host Docker Desktop and host Kubernetes on the Windows side).. 
 - add kubemq automation (backed by interface to sqs or kubemq container, based on deployed and local env automation)
-- add example 'hello kubify world' services in various languages
+- build various example 'hello kubify world' services in various languages, since this is turn key
+  - add those to tooling as well
 - add istio apm (FREE APM!!!!) feature to example services
+- add istio logs or/and greylog option (FREE LOGS and beautilful LOGS UI!!!!)
 - make sure CICD linux is stable, add example entrypoint files for cicd systems to run the cicd scripts
 - auto configure vscode eclipse and pycharm move versions to one file
 - ensure virtual env everywhere

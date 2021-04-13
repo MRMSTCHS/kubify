@@ -28,7 +28,7 @@
         name:
           - vim
           - emacs
-          - python-pip
+          - python3-pip
           - jq
           - unzip
           - nodejs
