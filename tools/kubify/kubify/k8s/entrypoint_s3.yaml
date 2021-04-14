@@ -69,6 +69,7 @@ spec:
               name: home-mount
             - mountPath: /var/run 
               name: docker-sock
+<<<<<<< HEAD
             - mountPath: /root/.npmrc
               subPath: .npmrc
               name: config
@@ -77,6 +78,11 @@ spec:
               name: kubify
           - secretRef:
               name: npm-credentials
+=======
+          envFrom:
+          - secretRef:
+              name: kubify
+>>>>>>> d8da54d3c115413db69f39b2c1043ffcf9ea242e
           resources:
             requests:
               memory: "64Mi"

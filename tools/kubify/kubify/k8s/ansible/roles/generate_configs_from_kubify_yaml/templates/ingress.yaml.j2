@@ -31,13 +31,20 @@ spec:
   - host: "{{ host_name }}"
     http:
       paths:
-      - backend:
-          serviceName: "{{ app_name }}"
-          servicePort: 80
-{% if (kubify_config | json_query('release.type')) == 'static_assets' or (kubify_config | json_query('configPath') is defined) %}
-      - path: "{{ kubify_config | json_query('configPath') | default('/config.json', true) }}"
+      - pathType: Prefix
+        path: "/"
         backend:
-          serviceName: "{{ app_name }}-config"
-          servicePort: 80
+          service:
+            name: "{{ app_name }}"
+            port:
+              number: 80
+{% if (kubify_config | json_query('release.type')) == 'static_assets' or (kubify_config | json_query('configPath') is defined) %}
+      - pathType: Prefix
+        path: "{{ kubify_config | json_query('configPath') | default('/config.json', true) }}"
+        backend:
+          service:
+            name: "{{ app_name }}-config"
+            port:
+              number: 80
 {% endif %}
 {% endfor %}

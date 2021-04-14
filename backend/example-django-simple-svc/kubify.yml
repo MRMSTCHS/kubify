@@ -17,11 +17,17 @@ dev:
 release:
   scripts:
     start: |
+<<<<<<< HEAD
       # gunicorn myproject.wsgi
       python manage.py runserver  0.0.0.0:8000
 config:
   PORT: "8000"
   #TODO notice repeating folder name "example-django-simple-svc" (that should be automatic, per the folder name, should be 0 times in this file)
+=======
+      python manage.py runserver  0.0.0.0:8000
+config:
+  PORT: "8000"
+>>>>>>> d8da54d3c115413db69f39b2c1043ffcf9ea242e
   APP_NAME: example-django-simple-svc
   DEBUG: "example-django-simple-svc:*"
   ENV: "{{ env }}"
@@ -35,7 +41,13 @@ profiles:
       - type: Resource
         resource:
           name: cpu
+<<<<<<< HEAD
           targetAverageUtilization: 40
+=======
+          target:
+            type: Utilization
+            averageUtilization: 40
+>>>>>>> d8da54d3c115413db69f39b2c1043ffcf9ea242e
     resources:
       requests:
         cpu: 64m

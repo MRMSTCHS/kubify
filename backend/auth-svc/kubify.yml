@@ -47,7 +47,7 @@ profiles:
       - type: Resource
         resource:
           name: cpu
-          targetAverageUtilization: 40
+          averageUtilization: 40
     resources:
       requests:
         cpu: 256m
@@ -71,7 +71,7 @@ profiles:
       - type: Resource
         resource:
           name: cpu
-          targetAverageUtilization: 40
+          averageUtilization: 40
     resources:
       requests:
         cpu: 256m

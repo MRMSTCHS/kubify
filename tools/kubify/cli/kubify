@@ -729,9 +729,10 @@ function configure {
   {
     SRC_MOUNT_PATTERN=`echo "$SRC_MOUNT" | sed 's/\\//\\\\\//g'`
     HOME_MOUNT_PATTERN=`echo "$HOME_MOUNT" | sed 's/\\//\\\\\//g'`
-    if [[ "$KUBIFY_CONTAINER_REGISTRY" == "dockerhub" ]]; then
+    if [[ "$KUBIFY_CONTAINER_REGISTRY" == *"dockerhub"* ]]; then
         ENTRYPOINT_TEMPLATE=`cat "$MANIFESTS/entrypoint.yaml" | sed "s/{{SRC_MOUNT}}/$SRC_MOUNT_PATTERN/g" | sed "s/{{HOME_MOUNT}}/$HOME_MOUNT_PATTERN/g"`
-    elif [[ "$KUBIFY_CONTAINER_REGISTRY" == "ecr" ]]; then
+        exit 1
+    elif [[ "$KUBIFY_CONTAINER_REGISTRY" == *"ecr"* ]]; then
         ENTRYPOINT_TEMPLATE=`cat "$MANIFESTS/entrypoint_s3.yaml" | sed "s/{{SRC_MOUNT}}/$SRC_MOUNT_PATTERN/g" | sed "s/{{HOME_MOUNT}}/$HOME_MOUNT_PATTERN/g"`
     else
       echo "please set env KUBIFY_CONTAINER_REGISTRY"
