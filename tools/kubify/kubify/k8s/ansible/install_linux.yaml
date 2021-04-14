@@ -39,6 +39,7 @@
       - dnsmasq
       # comment docker-ce for WSL2 support (TODO: fix this edge case)
       - docker-ce
+      # comment networkmanager for WSL2 support (TODO: fix this edge case)
       - networkmanager
 
     pip_packages:
