@@ -39,8 +39,6 @@ sudo ntpdate -sb time.windows.com
 kubify up
 ```
 
-NOTE: Iwill make the windows compat a LOT smoother soon.. I will automate windown compat stuff WSL2 things or have an option to run everything needed in single automated run container that includes the kubernetes stack and this mapped folder in for code things (having each kubify command map to the local-init container).. :-)
-
 ____________________________________________________________________________________________
 
 
