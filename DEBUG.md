@@ -31,10 +31,15 @@ KUBIFY_DEBUG=1
 KUBIFY_CONTAINER_REGISTRY=ecr
 # example commands to start
 cd /mnt/c/Users/w/git/kubify
+# in case we are on WSL2 or container and so therefore are not using NetworkManager
+sudo sh -c "echo 'nameserver 127.0.0.1' >> /etc/resolv. conf"
 export PATH=$PATH:$(pwd)/tools/kubify/cli
+sudo apt -y install ntpdate
+sudo ntpdate -sb time.windows.com
 kubify up
 ```
 
+NOTE: Iwill make the windows compat a LOT smoother soon.. I will automate windown compat stuff WSL2 things or have an option to run everything needed in single automated run container that includes the kubernetes stack and this mapped folder in for code things (having each kubify command map to the local-init container).. :-)
 
 ____________________________________________________________________________________________
 

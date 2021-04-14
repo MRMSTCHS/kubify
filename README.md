@@ -17,7 +17,8 @@ Kubify is a CLI tool to manage the development and deployment lifecycle of micro
 
 export KUBIFY_DEBUG=1
 export KUBIFY_CONTAINER_REGISTRY=ecr
-export UNIQUE_COMPANY_ACRONYM=pt
+export UNIQUE_COMPANY_ACRONYM=os
+#OPTIONALLY CAN USE MINIKUBE (default is to install/use the faster Docker Desktop): KUBIFY_ENGINE=minikube
 
 ## Setup ##
 
@@ -251,7 +252,6 @@ Let's build DevOps 4.0 together!!!
 Version 1 of Kubify is live in and in master branch. 
 
 Let me know if it works nicely on your Apple and Linux things.
-I will fix WSL2 support drift for Windows sooooon.
 
 
 This is what it feels like to run `kubify up`:

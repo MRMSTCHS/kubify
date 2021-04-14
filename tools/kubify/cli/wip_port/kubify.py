@@ -2020,7 +2020,7 @@ def main(*argv):
         KUBIFY_CONTAINER_REGISTRY = ''        # Leave blank for DockerHub
         KUBIFY_LOCAL_DOMAIN_SUFFIX = 'kubify.local' # Local domain suffix 
         KUBIFY_LOCAL_DOMAIN = 'local.' + KUBIFY_LOCAL_DOMAIN_SUFFIX  # The local domain (for development)
-        KUBIFY_UPSTREAM_DOMAIN_SUFFIX = 'kubify.ai'  # The domain suffix for upstream environments (Example: <env>.kubify.local)
+        KUBIFY_UPSTREAM_DOMAIN_SUFFIX = 'kubify.com'  # The domain suffix for upstream environments (Example: <env>.kubify.local)
         KUBIFY_UPSTREAM_ENV_ACCOUNT = 'arn:aws:eks:' + os.environ["AWS_REGION"] + ':' + os.environ["AWS_ACCOUNT_NUMBER"]
         KUBIFY_NPM_CREDENTIALS_SECRET = 'npm-credentials'
 

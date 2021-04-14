@@ -41,7 +41,7 @@ KUBIFY_ENTRYPOINT_IMAGE=kubify/entrypoint   # The entrypoint image for ad-hoc co
 KUBIFY_CONTAINER_REGISTRY=${KUBIFY_CONTAINER_REGISTRY:-dockerhub} #to use AWS ECR instead, set environment variable  KUBIFY_CONTAINER_REGISTRY=ECR
 KUBIFY_LOCAL_DOMAIN_SUFFIX="kubify.local"                # Local domain suffix
 KUBIFY_LOCAL_DOMAIN="local.${KUBIFY_LOCAL_DOMAIN_SUFFIX}"  # The local domain (for development)
-KUBIFY_UPSTREAM_DOMAIN_SUFFIX="kubify.ai" # The domain suffix for upstream environments (Example: <env>.kubify.local)
+KUBIFY_UPSTREAM_DOMAIN_SUFFIX="${KUBIFY_UPSTREAM_DOMAIN_SUFFIX:-kubify.com}"   # The domain suffix for upstream environments (Example: <env>.kubify.local)
 KUBIFY_UPSTREAM_ENV_ACCOUNT="arn:aws:eks:${AWS_REGION}:${AWS_ACCOUNT_NUMBER}"
 KUBIFY_NPM_CREDENTIALS_SECRET="npm-credentials"
 
@@ -71,7 +71,7 @@ else
   echo "could not find s3 bucket, so creating it"
   # aws s3api create-bucket --bucket $NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
   aws s3 mb s3://$NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
-  aws s3api put-bucket-encryption --bucket $NAMING_PREFIX --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
+  aws s3api put-bucket-encryption --region $ARTIFACTS_S3_BUCKET_AWS_REGION --bucket $NAMING_PREFIX --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
   echo "s3 bucket encryption set"
 fi
 
@@ -91,12 +91,20 @@ elif [[ "$KUBIFY_ENGINE" == "local" ]]; then
   SRC_MOUNT=$SRC_DIR
   HOME_MOUNT=$HOME
 
-  if [[ "$OSTYPE" == "darwin"* ]]; then
+  # if [[ "$OSTYPE" == "darwin"* ]]; then
+  #   PROFILE=${KUBIFY_PROFILE:-docker-desktop}
+  # elif [[ "$OSTYPE" == "linux"* ]]; then
+  #   PROFILE=${KUBIFY_PROFILE:-default}
+  # fi
+
+  if [[ $KUBIFY_CI != '1' ]]; then
     PROFILE=${KUBIFY_PROFILE:-docker-desktop}
-  elif [[ "$OSTYPE" == "linux"* ]]; then
+  else
     PROFILE=${KUBIFY_PROFILE:-default}
   fi
+
 fi
+
 
 BUILD_PROFILE=ci-build          # Skaffold profile for building images in CI
 LOCAL_START_PROFILE=local-start # Skaffold profile for watching changes
@@ -263,7 +271,7 @@ function set_context {
     elif [[ "$KUBIFY_ENGINE" == "local" ]]; then
       echo Context already set
     fi
-    kubectx $PROFILE
+    kubectx $PROFILE || kubectx docker-desktop
   }
 }
 
@@ -738,9 +746,11 @@ function configure {
     fi
     echo "$ENTRYPOINT_TEMPLATE"
     echo "$ENTRYPOINT_TEMPLATE" | $KUBECTL_NS apply -f -
-    if [[ "$OSTYPE" == *"darwin"* ]]; then
-      configure_containers
-    fi
+    # TODO: 
+    # if [[ "$OSTYPE" == *"darwin"* ]]; then
+    #   configure_containers
+    # fi
+    configure_containers
   } &> $KUBIFY_OUT
 
   {
@@ -1425,7 +1435,9 @@ function wait_for_deployment {
 
 function check_containers {
   while true; do
-    exec kubify > /dev/null
+    # TODO (urgent task): fix folder mounts on WSL2 (for live code listening), for windows users
+    # and then remove || true
+    exec kubify > /dev/null || true
     if [ "$?" -ne 0 ]; then
       if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
         stop_mount
@@ -1603,8 +1615,8 @@ function export_secret {
   SECRETS=`kubesec decrypt ${SECRETS_FILE} --cleartext`
   SECRETS=$(echo "$SECRETS" | yq -r .data | jq -r "with_entries(.key |= .)")
 
-  aws secretsmanager create-secret --name $SECRET_NAME
-  aws secretsmanager put-secret-value --secret-id $SECRET_NAME --secret-string "${SECRETS}"
+  aws secretsmanager create-secret --name $SECRET_NAME --region $AWS_REGION
+  aws secretsmanager put-secret-value --secret-id $SECRET_NAME --secret-string "${SECRETS}" --region $AWS_REGION
 }
 
 function import_secret {
@@ -1635,7 +1647,7 @@ function _get_secret {
     --description "kubify_rocks_${ENV}_${APP_NAME}" \
     --secret-string {'"'"SecretString"'"':$(shuf -i 1-10000000000000000000 -n 1 )} || true  #NOTE: but you might have to wait for secretsmanager secret scheduled deletion if you deleted the secret recently https://www.youtube.com/watch?v=hxvJQcFRksM
   # jq map_values doc https://stedolan.github.io/jq/manual/
-  SECRET_DATA=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME | jq -r .SecretString | jq -r 'map_values(. | @base64)')
+  SECRET_DATA=$(aws secretsmanager get-secret-value --region $AWS_REGION --secret-id $SECRET_NAME | jq -r .SecretString | jq -r 'map_values(. | @base64)')
   if [ -z "$SECRET_DATA" ]; then
       echo "\SECRET_DATA came back empty, debug that first!"
       exit 1
@@ -1788,7 +1800,7 @@ function environments {
         fi
         CLUSTER=$(cat ${ENV_FILE}| yq -r .target.cluster)
         CONTEXT="${KUBIFY_UPSTREAM_ENV_ACCOUNT}:cluster/${CLUSTER}"
-        AWS_PROFILE=${AWS_ADMIN_PROFILE} aws eks update-kubeconfig --name ${CLUSTER} --alias kubify-${ENV}
+        AWS_PROFILE=${AWS_ADMIN_PROFILE} aws eks update-kubeconfig --name ${CLUSTER} --alias kubify-${ENV} --region $AWS_REGION
         kubens ${ENV}
         ;;
       diff)
