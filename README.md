@@ -15,17 +15,19 @@ Kubify is a CLI tool to manage the development and deployment lifecycle of micro
 
 ## Configure Env ##
 
-export KUBIFY_DEBUG=1
-export KUBIFY_CONTAINER_REGISTRY=ecr
-export UNIQUE_COMPANY_ACRONYM=os
-#OPTIONALLY CAN USE MINIKUBE (default is to install/use the faster Docker Desktop): KUBIFY_ENGINE=minikube
+
 
 ## Setup ##
 
-export PATH=$PATH:$(pwd)/tools/kubify/cli 
+ln -sf $(pwd)/kubify/tools/kubify/cli/kubify /usr/local/bin/kubify # or export PATH=$PATH:$(pwd)/tools/kubify/cli
 
-#install/configure/re-configure your local workstation with a proper cluster (including all pre-reqs automated)
+export KUBIFY_DEBUG=1
+export KUBIFY_CONTAINER_REGISTRY=ecr
+export UNIQUE_COMPANY_ACRONYM=os
+
+#install/configure/re-configure fully automated with 1 command
 kubify up
+
 
 
 ## Local Testing ##

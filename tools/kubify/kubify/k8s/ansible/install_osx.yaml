@@ -10,6 +10,7 @@
       - shyiko/kubesec
     brew_cask_packages:
       - visual-studio-code
+      - docker
     brew_remove_packages:
       - skaffold
     helm_url: https://raw.githubusercontent.com/Homebrew/homebrew-core/1e8e12c73c465f15ae25ed8bc5f321018b9107b1/Formula/kubernetes-helm.rb # Helm 2.13

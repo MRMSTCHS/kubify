@@ -37,6 +37,9 @@
       - wget
       - curl
       - dnsmasq
+      # comment docker-ce for WSL2 support (TODO: fix this edge case)
+      - docker-ce
+      - networkmanager
 
     pip_packages:
       - yq
