@@ -4,10 +4,17 @@
 export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
 export ENV=${ENV:-dev}
 
-
-# install awscli when it does not exist, since this is before the ansible
-# TODO: put this in the right place or have modifiers per OS
-aws --version || sudo apt-get update && sudo apt install -y awscli | true
+# GLOBAL OS OPTIONS
+if [[ "$OSTYPE" == *"darwin"* ]]; then
+  BASE64_DECODE="base64 -D"
+  MINIKUBE="minikube"
+  which aws || brew install awscli
+elif [[ "$OSTYPE" == *"linux"* ]]; then
+  BASE64_DECODE="base64 -d"
+  MINIKUBE="sudo minikube"
+  which aws || sudo apt-get update
+  which aws || sudo apt install -y awscli
+fi
 
 UNIQUE_COMPANY_ACRONYM=${UNIQUE_COMPANY_ACRONYM:-os}
 export NAMING_PREFIX=$UNIQUE_COMPANY_ACRONYM-$ENV-kubify
@@ -70,15 +77,6 @@ fi
 
 # CI Parameters
 PUBLISH_IMAGE_REPO_PREFIX=$NAMING_PREFIX
-
-# GLOBAL OS OPTIONS
-if [[ "$OSTYPE" == *"darwin"* ]]; then
-  BASE64_DECODE="base64 -D"
-  MINIKUBE="minikube"
-elif [[ "$OSTYPE" == *"linux"* ]]; then
-  BASE64_DECODE="base64 -d"
-  MINIKUBE="sudo minikube"
-fi
 
 if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
   PROFILE=kubify-kubify
