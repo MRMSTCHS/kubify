@@ -31,10 +31,13 @@ KUBIFY_DEBUG=1
 KUBIFY_CONTAINER_REGISTRY=ecr
 # example commands to start
 cd /mnt/c/Users/w/git/kubify
+# in case we are on WSL2 or container and so therefore are not using NetworkManager
+sudo sh -c "echo 'nameserver 127.0.0.1' >> /etc/resolv. conf"
 export PATH=$PATH:$(pwd)/tools/kubify/cli
+sudo apt -y install ntpdate
+sudo ntpdate -sb time.windows.com
 kubify up
 ```
-
 
 ____________________________________________________________________________________________
 
