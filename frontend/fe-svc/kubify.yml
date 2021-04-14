@@ -42,4 +42,4 @@ profiles:
       - type: Resource
         resource:
           name: cpu
-          targetAverageUtilization: 40
+          averageUtilization: 40
