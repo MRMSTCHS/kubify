@@ -33,7 +33,7 @@ mkdir -p $WORK_DIR
 alias kubify=${DIR}/kubify
 
 # Flags
-KUBIFY_ENGINE=${KUBIFY_ENGINE:-local}         # Options: local or minikube
+KUBIFY_ENGINE=${KUBIFY_ENGINE:-local}         # Options: local or minikube (local is docker-desktop native performance & minikube is an auto-deployed VM)
 KUBIFY_CI=${KUBIFY_CI:-0}                     # This is set to 1 in a Continuous Integration environment
 KUBIFY_VERBOSE=${KUBIFY_VERBOSE:-1}           # Sets the verbose logging to true (if set to 1)
 KUBIFY_DEBUG=${KUBIFY_DEBUG:-0}               # Sets the debug logging to true (if set to 1)
