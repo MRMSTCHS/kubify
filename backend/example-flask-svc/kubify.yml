@@ -66,11 +66,9 @@ profiles:
       - type: Resource
         resource:
           name: cpu
-<<<<<<< HEAD
-          targetAverageUtilization: 40
-=======
-          averageUtilization: 40
->>>>>>> d8da54d3c115413db69f39b2c1043ffcf9ea242e
+          target:
+            type: Utilization
+            averageUtilization: 40
     resources:
       requests:
         cpu: 64m
