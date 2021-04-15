@@ -1,7 +1,7 @@
 ._kubify_work
 **/._kubify_work
 ._*
-
+kubify_config.sh
 # mac
 .DS_Store
 **/.DS_Store

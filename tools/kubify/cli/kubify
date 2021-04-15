@@ -1,5 +1,26 @@
 #!/usr/bin/env bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+CONFIG_FILE="$DIR/kubify_config.sh"
+if [[ -f "$CONFIG_FILE" ]]; then
+    . $CONFIG_FILE
+else
+  echo "Would you like to use dockerhub or amazon ecr? (dockerhub or ecr)"
+  read KUBIFY_CONTAINER_REGISTRY
+  echo "What is your Unique company acronym?"
+  read UNIQUE_COMPANY_ACRONYM
+  echo "Do you want to turn on debugging 0 No 1 Yes? (0 or 1)"
+  read KUBIFY_DEBUG
+cat << EOF > $CONFIG_FILE
+#!/usr/bin/env bash
+
+export KUBIFY_CONTAINER_REGISTRY=$KUBIFY_CONTAINER_REGISTRY
+export UNIQUE_COMPANY_ACRONYM=$UNIQUE_COMPANY_ACRONYM
+export KUBIFY_DEBUG=$KUBIFY_DEBUG
+EOF
+
+fi
+
 # Options
 export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
 export ENV=${ENV:-dev}
@@ -38,7 +59,8 @@ KUBIFY_CI=${KUBIFY_CI:-0}                     # This is set to 1 in a Continuous
 KUBIFY_VERBOSE=${KUBIFY_VERBOSE:-1}           # Sets the verbose logging to true (if set to 1)
 KUBIFY_DEBUG=${KUBIFY_DEBUG:-0}               # Sets the debug logging to true (if set to 1)
 KUBIFY_ENTRYPOINT_IMAGE=kubify/entrypoint   # The entrypoint image for ad-hoc commands
-KUBIFY_CONTAINER_REGISTRY=${KUBIFY_CONTAINER_REGISTRY:-dockerhub} #to use AWS ECR instead, set environment variable  KUBIFY_CONTAINER_REGISTRY=ECR
+#moved to config file
+#KUBIFY_CONTAINER_REGISTRY=${KUBIFY_CONTAINER_REGISTRY:-dockerhub} #to use AWS ECR instead, set environment variable  KUBIFY_CONTAINER_REGISTRY=ECR
 KUBIFY_LOCAL_DOMAIN_SUFFIX="kubify.local"                # Local domain suffix
 KUBIFY_LOCAL_DOMAIN="local.${KUBIFY_LOCAL_DOMAIN_SUFFIX}"  # The local domain (for development)
 KUBIFY_UPSTREAM_DOMAIN_SUFFIX="${KUBIFY_UPSTREAM_DOMAIN_SUFFIX:-kubify.com}"   # The domain suffix for upstream environments (Example: <env>.kubify.local)
