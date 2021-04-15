@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-CONFIG_FILE="$DIR/kubify_config.sh"
-if [[ -f "$CONFIG_FILE" ]]; then
-    . $CONFIG_FILE
-else
-  echo "Would you like to use dockerhub or amazon ecr? (dockerhub or ecr)"
-  read KUBIFY_CONTAINER_REGISTRY
-  echo "What is your Unique company acronym?"
-  read UNIQUE_COMPANY_ACRONYM
-  echo "Do you want to turn on debugging 0 No 1 Yes? (0 or 1)"
-  read KUBIFY_DEBUG
+function kubify_config {
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+  CONFIG_FILE="$DIR/kubify_config.sh"
+  if [[ -f "$CONFIG_FILE" ]]; then
+      . $CONFIG_FILE
+  else
+    echo "Would you like to use dockerhub or amazon ecr? (dockerhub or ecr)"
+    read KUBIFY_CONTAINER_REGISTRY
+    echo "What is your Unique company acronym?"
+    read UNIQUE_COMPANY_ACRONYM
+    echo "Do you want to turn on debugging 0 No 1 Yes? (0 or 1)"
+    read KUBIFY_DEBUG
 cat << EOF > $CONFIG_FILE
 #!/usr/bin/env bash
 
@@ -20,6 +21,9 @@ export KUBIFY_DEBUG=$KUBIFY_DEBUG
 EOF
 
 fi
+}
+
+kubify_config
 
 # Options
 export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
@@ -1320,6 +1324,7 @@ function build-start-kubify {
 }
 
 function start {
+  kubify_config
   check_skaffold
   APP_NAME=`basename $PWD`
   APP_DIR=$PWD
