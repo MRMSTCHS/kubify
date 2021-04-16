@@ -4,7 +4,11 @@ Kubify es una herramienta CLI (interfaz de línea de comandos) para administrar 
  
 # Configuración
 
+```
+
 ## Configure Env ##
+
+
 
 ## Setup ##
 
@@ -14,20 +18,23 @@ export KUBIFY_DEBUG=1
 export KUBIFY_CONTAINER_REGISTRY=ecr
 export UNIQUE_COMPANY_ACRONYM=os
 
-install/configure/re-configure fully automated with 1 command
+#install/configure/re-configure fully automated with 1 command
 kubify up
+
 
 
 ## Local Testing ##
 
-start all services locally (entire infra running locally)
+#start all services locally (entire infra running locally)
 kubify start-all 
 
-cd into a specific service
+#cd into a specific service
 cd backend/backend-svc
 
-listens for code changes, shows logs, runs unit tests (on each code save), opens and auto-configures IDE
+#listens for code changes, shows logs, runs unit tests (on each code save), opens and auto-configures IDE
 kubify start
+
+```
 
 #Pero por qué
 
