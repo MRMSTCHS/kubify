@@ -36,7 +36,7 @@ kubify start
 
 ```
 
-#Pero por qué
+# Pero por qué
 
 Esta herramienta le permite (con solo 2 comandos de terminal: kubify up && kubify start-all) tener la infraestructura COMPLETA ejecutándose en su computadora portátil (sí, la infraestructura COMPLETA, increíble, revolucionaria), luego simplemente cd en el microservicio (cd en una carpeta backend / [ ] o frontend / [ ]) carpeta en la que desea trabajar (luego ejecute kubify start) para iniciar pruebas rápidas (escucha los cambios de código, también ejecuta sus pruebas unitarias en cada guardado y configura automáticamente vscode para la configuración del punto de interrupción)
 
@@ -44,14 +44,20 @@ Imagínese este nuevo mundo: ¡¡¡Un desarrollador en los primeros minutos (inc
 
 
 Ejecute el entorno exacto que está ejecutando en el entorno k8s (Kubernetes) implementado localmente (para que pueda estar muy seguro de que su confirmación no romperá nada, prueba rápida y que se ve bonito).
+
+
 ✅✅✅✅✅✅✅✅
 
 
 Esto es realmente importante en la industria de DevOps (así que contribuya). Nuestros desarrolladores deben obtener una solución llave en mano completa (full turnkey)  adecuada desde el día 1 que esté probada en batalla. Piense en la nube, pero en código abierto. DevOps necesita evolucionar a DevOps 4.0 y rápido.
+
+
 ✅✅✅✅✅✅✅✅
 
 
 Las pruebas locales (con TODA la infraestructura ejecutándose localmente perfectamente) deberían ser un clic de un botón (ESTA FUNCIÓN ESTÁ EN VIVO)!!
+
+
 ✅✅✅✅✅✅✅✅
 
 
