@@ -1,4 +1,5 @@
-💻
+💻 TRADUCCIÓN EN ESPAÑOL
+
 # Descripción
  
 Kubify es una herramienta CLI (interfaz de línea de comandos) para administrar el ciclo de vida de desarrollo e implementación de microservicios.
