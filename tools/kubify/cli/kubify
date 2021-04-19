@@ -7,10 +7,13 @@ function kubify_config {
       . $CONFIG_FILE
   else
     echo "Would you like to use dockerhub or amazon ecr? (dockerhub or ecr)"
+    echo "¿Le gustaría usar dockerhub o amazon ecr? (Dockerhub o ecr)"
     read KUBIFY_CONTAINER_REGISTRY
     echo "What is your Unique company acronym?"
+    echo "¿Cuál es el acrónimo de su empresa?"
     read UNIQUE_COMPANY_ACRONYM
     echo "Do you want to turn on debugging 0 No 1 Yes? (0 or 1)"
+    echo "¿Quieres activar la depuración 0 No 1 Sí? (0 o 1)"
     read KUBIFY_DEBUG
 cat << EOF > $CONFIG_FILE
 #!/usr/bin/env bash
@@ -26,10 +29,12 @@ fi
 kubify_config
 
 # Options
+# ESP: OPCIONES
 export SKAFFOLD_UPDATE_CHECK=${SKAFFOLD_UPDATE_CHECK:-0}
 export ENV=${ENV:-dev}
 
 # GLOBAL OS OPTIONS
+# OPCIONES GLOBALES DEL SO
 if [[ "$OSTYPE" == *"darwin"* ]]; then
   BASE64_DECODE="base64 -D"
   MINIKUBE="minikube"
@@ -50,36 +55,76 @@ export AWS_PROFILE=${KUBIFY_AWS_PROFILE:-default}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SRC_DIR=`echo "$(cd "$(dirname "$DIR/../../../..")"; pwd)"`
 KUBIFY_CURRENT_VERSION=`git --git-dir=${SRC_DIR}/.git rev-parse --verify HEAD --short`
-# NOTE (where to put generated files & cache): 
+
+# NOTE (where to put generated files & cache):
+# ESP: NOTA (dónde colocar los archivos generados y el caché):
 # command > ${WORK_DIR}/file.extension (in the ${WORK_DIR}/file.extension location)
+# ESP: command > ${WORK_DIR}/file.extension (en la ubicación ${WORK_DIR}/file.extension location)
+
 WORK_DIR=${SRC_DIR}/._kubify_work
 K8S_DIR=${SRC_DIR}/tools/kubify/kubify
 mkdir -p $WORK_DIR
 alias kubify=${DIR}/kubify
 
 # Flags
-KUBIFY_ENGINE=${KUBIFY_ENGINE:-local}         # Options: local or minikube (local is docker-desktop native performance & minikube is an auto-deployed VM)
-KUBIFY_CI=${KUBIFY_CI:-0}                     # This is set to 1 in a Continuous Integration environment
-KUBIFY_VERBOSE=${KUBIFY_VERBOSE:-1}           # Sets the verbose logging to true (if set to 1)
-KUBIFY_DEBUG=${KUBIFY_DEBUG:-0}               # Sets the debug logging to true (if set to 1)
-KUBIFY_ENTRYPOINT_IMAGE=kubify/entrypoint   # The entrypoint image for ad-hoc commands
+# ESP: BANDERAS
+
+KUBIFY_ENGINE=${KUBIFY_ENGINE:-local}         
+# Options: local or minikube (local is docker-desktop native performance & minikube is an auto-deployed VM)
+# ESP: Opciones: local o minikube (local es el rendimiento nativo de docker-desktop y minikube es una máquina virtual implementada automáticamente)
+
+KUBIFY_CI=${KUBIFY_CI:-0}                     
+# This is set to 1 in a Continuous Integration environment
+# ESP: Se establece en 1 en un entorno de integración continua.
+
+KUBIFY_VERBOSE=${KUBIFY_VERBOSE:-1}           
+# Sets the verbose logging to true (if set to 1)
+# ESP: Establece el registro detallado en verdadero (si se establece en 1)
+
+KUBIFY_DEBUG=${KUBIFY_DEBUG:-0}               
+# Sets the debug logging to true (if set to 1)
+# ESP: Establece el registro de depuración en verdadero (si se establece en 1)
+
+KUBIFY_ENTRYPOINT_IMAGE=kubify/entrypoint   
+# The entrypoint image for ad-hoc commands
+# ESP: La imagen de punto de entrada para comandos ad-hoc
 #moved to config file
+# ESP: movido al archivo de configuración
 #KUBIFY_CONTAINER_REGISTRY=${KUBIFY_CONTAINER_REGISTRY:-dockerhub} #to use AWS ECR instead, set environment variable  KUBIFY_CONTAINER_REGISTRY=ECR
-KUBIFY_LOCAL_DOMAIN_SUFFIX="kubify.local"                # Local domain suffix
-KUBIFY_LOCAL_DOMAIN="local.${KUBIFY_LOCAL_DOMAIN_SUFFIX}"  # The local domain (for development)
-KUBIFY_UPSTREAM_DOMAIN_SUFFIX="${KUBIFY_UPSTREAM_DOMAIN_SUFFIX:-kubify.com}"   # The domain suffix for upstream environments (Example: <env>.kubify.local)
+# ESP: #KUBIFY_CONTAINER_REGISTRY = $ {KUBIFY_CONTAINER_REGISTRY: -dockerhub} #para usar AWS ECR en su lugar, establezca la variable de entorno KUBIFY_CONTAINER_REGISTRY = ECR
+
+KUBIFY_LOCAL_DOMAIN_SUFFIX="kubify.local"               
+# Local domain suffix
+# ESP: Sufijo de dominio local
+
+KUBIFY_LOCAL_DOMAIN="local.${KUBIFY_LOCAL_DOMAIN_SUFFIX}"  
+# The local domain (for development)
+# ESP: El dominio local (para desarrollo)
+
+KUBIFY_UPSTREAM_DOMAIN_SUFFIX="${KUBIFY_UPSTREAM_DOMAIN_SUFFIX:-kubify.com}"   
+# The domain suffix for upstream environments (Example: <env>.kubify.local)
+# ESP: El sufijo de dominio para entornos ascendentes (ejemplo: <env> .kubify.local)
+
 KUBIFY_UPSTREAM_ENV_ACCOUNT="arn:aws:eks:${AWS_REGION}:${AWS_ACCOUNT_NUMBER}"
 KUBIFY_NPM_CREDENTIALS_SECRET="npm-credentials"
 
 # Dynamic Defaults
-cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID | grep -Eo '[0-9]{1,12}' || aws sts get-caller-identity || aws configure # login aws if not already logged in
+# ESP: VALORES PREDETERMINADOS DINÁMICOS
+
+cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID | grep -Eo '[0-9]{1,12}' || aws sts get-caller-identity || aws configure 
+# login aws if not already logged in
+# ESP: iniciar sesión aws si aún no ha iniciado sesión
 # NOTE: to clear AWS Account ID value cache file: rm -rf ./._kubify_work/env_var__cache__AWS_ACCOUNT_ID
+# ESP: NOTA: para borrar el archivo de caché de valor de ID de cuenta de AWS: rm -rf ./._kubify_work/env_var__cache__AWS_ACCOUNT_ID
+
 cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID | grep -Eo '[0-9]{1,12}' || aws sts get-caller-identity --query Account --output text > ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID
 AWS_ACCOUNT_ID=`cat ${WORK_DIR}/env_var__cache__AWS_ACCOUNT_ID`
 AWS_ACCESS_KEY_ID=`aws configure get default.aws_access_key_id`
 AWS_SECRET_ACCESS_KEY=`aws configure get default.aws_secret_access_key`
 
 # we don't want the S3 artifacts bucket to exist in us-east-1 (due to a known bug in pom.xml and similar files in using us-east-1 for artifacts, as well as for regional code backup automation redundancy reasons)
+# ESP: # no queremos que exista el depósito de artefactos S3 en us-east-1 (debido a un error conocido en pom.xml y archivos similares al usar us-east-1 para artefactos, así como para la redundancia de automatización de copia de seguridad de código regional razones)
+
 if [[ "$AWS_REGION" == *"us-east-1"* ]]; then
   ARTIFACTS_S3_BUCKET_AWS_REGION="us-east-2";
 elif [[ "$AWS_REGION" == *"us-west-2"* ]]; then
@@ -88,29 +133,41 @@ else
   ARTIFACTS_S3_BUCKET_AWS_REGION="us-west-2";
 fi
 
-# in case the bucket is aleady created or if we created it in the infra folder using terraform (since that runs first)
+# in case the bucket is already created or if we created it in the infra folder using terraform (since that runs first)
+# ESP: en caso de que el depósito ya esté creado o si lo creamos en la carpeta infra usando terraform (ya que se ejecuta primero) 
+
 echo "checking access to artifacts s3 bucket to exist, creating it (with encryption at rest enabled) if it does not exist.."
+echo "Verificando que exista acceso al depósito de artefactos s3, creándolo (con el cifrado en reposo habilitado) si no existe .."
 if aws s3 ls "s3://$NAMING_PREFIX"
 then
   echo "success: s3 bucket access working"
+  echo "éxito: el acceso al depósito de s3 funciona"
 else
   echo "could not find s3 bucket, so creating it"
+  echo "no se pudo encontrar el depósito s3, así que creálo tu mismo"
   # aws s3api create-bucket --bucket $NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
   aws s3 mb s3://$NAMING_PREFIX --region $ARTIFACTS_S3_BUCKET_AWS_REGION
   aws s3api put-bucket-encryption --region $ARTIFACTS_S3_BUCKET_AWS_REGION --bucket $NAMING_PREFIX --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
   echo "s3 bucket encryption set"
+  echo "Conjunto de cifrado de depósito s3"
 fi
 
 # CI Parameters
+# ESP: Parámetros de CI
 PUBLISH_IMAGE_REPO_PREFIX=$NAMING_PREFIX
 
 if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
   PROFILE=kubify-kubify
   # Minikube parameters
   MINIKUBE_DISK_SIZE=80g
-  MINIKUBE_MEMORY=8192            # 8GB
-  MINIKUBE_ADDONS="ingress"       # Separate multiple addons with spaces
-  MINIKUBE_VM_DRIVER="none" # Faster than virtualbox and allows dynamic memory management
+  MINIKUBE_MEMORY=8192            
+  # 8GB
+  MINIKUBE_ADDONS="ingress"       
+  # Separate multiple addons with spaces 
+  # ESP: Separe varios complementos con espacios
+  MINIKUBE_VM_DRIVER="none" 
+  # Faster than virtualbox and allows dynamic memory management
+  # ESP: Más rápido que virtualbox y permite una gestión dinámica de la memoria
   SRC_MOUNT=/src/kubify
   HOME_MOUNT=/config/home
 elif [[ "$KUBIFY_ENGINE" == "local" ]]; then
@@ -132,11 +189,18 @@ elif [[ "$KUBIFY_ENGINE" == "local" ]]; then
 fi
 
 
-BUILD_PROFILE=ci-build          # Skaffold profile for building images in CI
-LOCAL_START_PROFILE=local-start # Skaffold profile for watching changes
-LOCAL_RUN_PROFILE=local-run     # Skaffold profile for running locally
-NAMESPACE=${NAMESPACE:-kubify}    # Kubernetes namespace where apps are deployed
-
+BUILD_PROFILE=ci-build          
+# Skaffold profile for building images in CI
+# ESP: Perfil Skaffold para construir imágenes en CI
+LOCAL_START_PROFILE=local-start 
+# Skaffold profile for watching changes
+# ESP: Perfil de Skaffold para ver cambios
+LOCAL_RUN_PROFILE=local-run     
+# Skaffold profile for running locally
+# ESP: Perfil Skaffold para correr localmente
+NAMESPACE=${NAMESPACE:-kubify}    
+# Kubernetes namespace where apps are deployed
+# ESP: Espacio de nombres de Kubernetes donde se implementan las aplicaciones
 if [ -z "$PROFILE" ]; then
   KUBECTL="kubectl"
   HELM="helm"
@@ -156,8 +220,11 @@ ALL_ENV=( dev test stage prod )
 AWS_ADMIN_PROFILE=${AWS_ADMIN_PROFILE:-kubify-admin}
 AWS_ACCOUNT_NUMBER=$(aws sts get-caller-identity --query Account --output text --profile ${AWS_PROFILE})
 # The key used to encrypt the secrets
+# ESP: La clave utilizada para cifrar los secretos.
 # TODO: Move this somewhere outside this file
+# ESP: TODO: Mueva esto a algún lugar fuera de este archivo
 # TODO: Store this in AWS SSM ?
+# ESP: TODO: ¿Almacenar esto en AWS SSM?
 DEV_KMS="arn:aws:kms:${AWS_REGION}:${AWS_ACCOUNT_NUMBER}:alias/secrets"
 TEST_KMS="arn:aws:kms:${AWS_REGION}:${AWS_ACCOUNT_NUMBER}:alias/secrets"
 STAGE_KMS="arn:aws:kms:${AWS_REGION}:${AWS_ACCOUNT_NUMBER}:alias/secrets"
@@ -169,9 +236,9 @@ check_flag() {
   _KUBIFY_VAR=KUBIFY_${1}
   if [ "${!_KUBIFY_VAR}" == "0" ];
   then
-    return 1 # Yes
+    return 1 # Yes #ESP: SÍ
   else
-    return 0 # No
+    return 0 # No # ESP: NO
   fi
 }
 
@@ -198,6 +265,7 @@ read_flag_verbose() {
 # This is a general-purpose function to ask Yes/No questions in Bash, either
 # with or without a default answer. It keeps repeating the question until it
 # gets a valid answer.
+# ESP: Esta es una función de propósito general para hacer preguntas Sí / No en Bash, ya sea con o sin una respuesta predeterminada. Sigue repitiendo la pregunta hasta que obtiene una respuesta válida.
 ask() {
   # https://gist.github.com/davejamesmiller/1965569
   local prompt default reply
@@ -216,17 +284,21 @@ ask() {
   while true; do
 
     # Ask the question (not using "read -p" as it uses stderr not stdout)
+    # ESP: Haga la pregunta (sin usar "read -p" ya que usa stderr no stdout)
     echo -n "$1 [$prompt] "
 
     # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
+    # ESP: Lea la respuesta (use / dev / tty en caso de que stdin sea redirigido desde otro lugar)
     read reply </dev/tty
 
     # Default?
+    # ESP: ¿Defecto?
     if [ -z "$reply" ]; then
       reply=$default
     fi
 
     # Check if the reply is valid
+    # ESP: Comprueba si la respuesta es válida
     case "$reply" in
       Y*|y*) return 0 ;;
       N*|n*) return 1 ;;
@@ -238,15 +310,19 @@ ask() {
 function switch_version {
   check_arg $1 "No version specified!"
 
-  # Denote current version from Git HEAD commit hash
+  # Denote current version from Git HEAD commit HASH
+  # ESP: Indica la versión actual del HASH de confirmación de Git HEAD
   KUBIFY_VERSION=$1
 
   # Compare versions
+  # ESP: Comparar versiones
   if [[ "${KUBIFY_VERSION}" != "${KUBIFY_CURRENT_VERSION}" ]]; then
     echo "Switching kubify version from ${KUBIFY_CURRENT_VERSION} to ${KUBIFY_VERSION}"
+    echo "Cambiando la versión de kubify de ${KUBIFY_CURRENT_VERSION} a ${KUBIFY_VERSION}"
     git checkout ${KUBIFY_VERSION} ${SRC_DIR}/tools/kubify
   else
     echo "Kubify is already on version ${KUBIFY_CURRENT_VERSION}"
+    echo "Kubify ya está en la versión ${KUBIFY_CURRENT_VERSION}"
   fi
 }
 
@@ -256,11 +332,16 @@ function version {
 
 function check {
   echo "Docker: $(which docker): $(docker --version)"
+  echo "Ventana acoplable: $(qué ventana acoplable): $(ventana acoplable --versión)"
   echo "Kubernetes CLI: $(which $KUBECTL): $($KUBECTL version --client --short)"
+  echo "CLI de Kubernetes: $(que $ KUBECTL): $($ KUBECTL versión --client --short)"
   if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
     echo "Minikube: $(which minikube): $(minikube version)"
+    echo "Minikube: $(qué minikube): $(versión minikube)"
   fi
   echo "Helm: $(which helm): $(helm version --client)"
+  echo "Timón: $(which helm): $(helm version --client)"
+  
   local_env_running
 
   $HELM list
@@ -269,23 +350,33 @@ function check {
 
   if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
     echo "DNS Info:"
+    eco "Información de DNS:"
     echo "  Minikube IP: $($MINIKUBE ip)"
+    echo " IP de Minikube: $($MINIKUBE ip)"
     echo "  DNSmasq IP:  $(dig +short ${KUBIFY_LOCAL_DOMAIN})"
+    echo " IP de DNSmasq: $(dig +short ${KUBIFY_LOCAL_DOMAIN})"
+    
   fi
 }
 
 function _not_implemented {
   echo "'kubify $1' not implemented yet."
+  echo "'kubify $ 1' aún no se ha implementado."
+  
   exit 1
 }
 
 function _is_removed {
   echo "'kubify $1' has been removed since it isn't necessary."
+  echo "'kubify $ 1' ha sido eliminado porque no es necesario."
+  
   exit 1
 }
 
 function set_minikube {
   # eval $($MINIKUBE --profile ${PROFILE} docker-env)
+  # ESP: evaluación $($MINIKUBE --profile ${PROFILE} docker-env)
+  
   $MINIKUBE profile $PROFILE
 }
 
@@ -362,6 +453,7 @@ function update_registry_secret() {
   if ! ${KUBECTL_NS} get secret $REG_SECRET; then
     if test -f "$HOME/.netrc"; then
       echo "$HOME/.netrc file exists, using it"
+      echo "El archivo $HOME / .netrc existe, está usándolo"
       grep "hub\.docker\.com" $HOME/.netrc
       if [ $? -eq 0 ]; then
         while IFS=, read -r username email password; do
@@ -409,17 +501,22 @@ function update_registry_secret() {
 function update_npm_secret() {
   if [ ! -z "${NPM_TOKEN}" ]; then
     echo "NPM_TOKEN is already set. Re-using it..."
+    echo "NPM_TOKEN ya está configurado. Reutilizándolo ..."
   else
     echo "NPM_TOKEN is not set, reading from npmrc.."
+    echo "NPM_TOKEN no está configurado, leyendo desde npmrc .."
     if test -f "$HOME/.npmrc"; then
       echo "$HOME/.npmrc exists, using it's token.."
+      echo "$ HOME / .npmrc existe, usando su token ..."
       IN=$(tail -1 $HOME/.npmrc | grep "^\/")
       IFS='=' read -r -a ADDR <<< "$IN"
       export NPM_TOKEN=${ADDR[1]}
     else
       echo "$HOME/.npmrc does not exist, please login to NPMJS, so that you can pull private packages:"
+      echo "$ HOME / .npmrc no existe, inicie sesión en NPMJS para poder extraer paquetes privados:"
       npm login
       echo "$HOME/.npmrc now exists, thank you, using it's token.."
+      echo "$ HOME / .npmrc ahora existe, gracias, usando su token .."
       IN=$(tail -1 $HOME/.npmrc | grep "^\/")
       IFS='=' read -r -a ADDR <<< "$IN"
       export NPM_TOKEN=${ADDR[1]}
@@ -427,11 +524,16 @@ function update_npm_secret() {
         npm token create --readonly
         if [ $? -eq 0 ]; then
           echo "Copy the NPM token above and paste it into the prompt below."
+          echo "Copie el token NPM de arriba y péguelo en el indicador de abajo".
           echo -n "NPM Token: "
+          echo -n "Token de NPM:"
+          
           read -s NPM_TOKEN
         else
           echo "npm token creation failed, please delete a token from https://www.npmjs.com/settings/(USERNAME)/tokens "
+          echo "Falló la creación del token npm, elimine un token de https://www.npmjs.com/settings/(USERNAME)/tokens"
           echo " and try the command directly: kubify update_npm_secret"
+          echo "y prueba el comando directamente: kubify update_npm_secret"
           exit 1
         fi
       fi
@@ -458,6 +560,7 @@ function get_npm_secret_direct() {
         export NPM_TOKEN=${ADDR[1]}
       else
         echo "$HOME/.npmrc does not exist, please login to NPMJS, so that you can pull private packages.. Try using kubify up"
+        echo "$ HOME / .npmrc no existe, inicie sesión en NPMJS, para que pueda extraer paquetes privados. Intente usar kubify up"
         exit 1
       fi
     fi
@@ -474,6 +577,7 @@ function get_npm_secret() {
       echo "${K8_NPM_TOKEN}" | grep -q '[0-9]'
       if [ $? = 1 ]; then
           echo "Problem accessing k8 npm secret. Try running 'kubify up', test the 'kubify update_npm_secret' and the 'kubify get_npm_secret' commands."
+          echo "Problema al acceder a k8 npm secret. Intente ejecutar 'kubify up', pruebe los comandos 'kubify update_npm_secret' y 'kubify get_npm_secret'".
           exit 1
       else
         echo ${K8_NPM_TOKEN}
@@ -488,8 +592,10 @@ function _generate_local_cluster_cert {
 
 function debug {
   echo "!!ALL THE kube-system NAMESPACE OBJECTS:"
+  echo "!! TODOS LOS OBJETOS DE ESPACIO DE NOMBRES del sistema kube:"
   $KUBECTL api-resources --verbs=list --namespaced -o name | xargs -n 1 $KUBECTL get --show-kind --ignore-not-found -n kube-system
   echo "!!ALL THE kubify NAMESPACE OBJECTS:"
+  echo "!! TODOS LOS OBJETOS DEL ESPACIO DE NOMBRE de kubify:"
   $KUBECTL api-resources --verbs=list --namespaced -o name | xargs -n 1 $KUBECTL get --show-kind --ignore-not-found -n kubify
 }
 
@@ -500,6 +606,7 @@ function configure_cluster {
 
   if [[ "$OSTYPE" == *"linux"* ]]; then
     # check if add-on-cluster-admin is enabled
+    # ESP: comprobar si el add-on-cluster-admin está habilitado
     CLUSTER_ADMIN_ENABLED=$($KUBECTL get clusterrolebinding -o json | jq -r '.items[] | select(.metadata.name == "add-on-cluster-admin")' --exit-status > /dev/null ||:)
     if [ $CLUSTER_ADMIN_ENABLED ]; then
       $KUBECTL create clusterrolebinding add-on-cluster-admin \
@@ -515,8 +622,12 @@ function configure_cluster {
   fi
 
   echo "Configuring cluster"
+  echo "Configurando grupo"
+  
   {
     echo "skipping tiller init, since helm3 removed it"
+    echo "omitiendo tiller init, ya que helm3 lo eliminó"
+    
     # https://github.com/helm/helm/issues/6996
     # $HELM init --force-upgrade --upgrade
     # $KUBECTL rollout status -w deployment/tiller-deploy -n kube-system
@@ -530,22 +641,32 @@ function configure_cluster {
     $HELM repo update
 
     # Install kubedb for managing databases
+    # ESP: Instale kubedb para administrar bases de datos
     # is broken locally:
+    # ESP: está roto localmente:
     #KUBEDB_VERSION=v2021.03.17
     # so we will use the last version before that (they used to use a version naming convention that didn't match the version name):
+    # ESP: por lo que usaremos la última versión anterior (solían usar una convención de nomenclatura de versión que no coincidía con el nombre de la versión):
     # also we had to do a find/replace from kubedb-operator to kubedb-community (previous helm chart name, before the march breaking changes of kubedb)
+    # ESP: también tuvimos que hacer una búsqueda / reemplazo de kubedb-operator a kubedb-community (nombre del gráfico de timón anterior, antes de los cambios de marcha de kubedb)
     KUBEDB_VERSION=v0.16.2
 
     # workaround, since --install was not ignoring errors (and \
     # the KubeDB public repo latest release version is using the depreciated api resulting in error: 
     # `W0408 13:59:35.514944    2349 warnings.go:70] apiextensions.k8s.io/v1beta1 CustomResourceDefinition is deprecated \
     #  in v1.16+, unavailable in v1.22+; use apiextensions.k8s.io/v1 CustomResourceDefinition` )
+    # ESP: Solución alternativa, ya que --install no ignoraba los errores (y la última versión de lanzamiento del repositorio público de\ 
+    # KubeDB está usando la api depreciada, lo que da como resultado un error:`W0408 13: 59: 35.514944 2349 warnings.go: 70] apiextensions.k8s.io/v1beta1 CustomResourceDefinition\
+    # está en desuso, en v1.16 +, no disponible en v1.22 +; use apiextensions.k8s.io/v1 CustomResourceDefinition`)
     if `$KUBECTL --namespace kube-system get pods | grep kubedb` ; then
         echo "KubeDB is already installed, so running upgrade command instead.."
+        echo "KubeDB ya está instalado, por lo que ejecutar el comando de actualización en su lugar ..."
         echo "TODO: remove the '|| true' workaround once they release a stable KubeDB version release (since they already fixed in master looks like)"
+        echo "TODO: elimine la solución alternativa '|| true' una vez que publiquen una versión estable de KubeDB (ya que ya se arreglaron en el aspecto maestro)"
         $HELM ${TILLER} upgrade kubedb-community appscode/kubedb --install --version $KUBEDB_VERSION --namespace kube-system || true
     else
         echo "Installing KubeDB.."
+        echo "Instalando KubeDB .."
         # #TODO: look into why the uninstaller for the recent release of kubedb is borked, but for now another workaround
         # $KUBECTL delete psp elasticsearch-db || true
         # $KUBECTL delete psp maria-db || true
@@ -556,7 +677,19 @@ function configure_cluster {
         # postgres-db
         # proxysql-db
         # redis-db
+        # ESP: #TODO: investigue por qué el desinstalador de la versión reciente de kubedb está mal, pero por ahora otra solución: 
+        # $ KUBECTL eliminar psp elasticsearch-db || true,
+        # $ KUBECTL eliminar psp maria-db || true
+        # memcached-db
+        # mongodb-db
+        # mysql-db
+        # percona-xtradb-db
+        # postgres-db
+        # proxysql-db
+        # redis-db
+        
         echo "TODO: remove the '|| true' workaround once they release a stable KubeDB version release (since they already fixed in master looks like)"
+        echo "TODO: elimine la solución alternativa '|| true' una vez que publiquen una versión estable de KubeDB (ya que ya se arreglaron en el aspecto maestro)"
         $HELM ${TILLER} install kubedb-community appscode/kubedb --version $KUBEDB_VERSION --namespace kube-system || true
     fi
     
@@ -564,6 +697,8 @@ function configure_cluster {
     $HELM ${TILLER} upgrade kubedb-catalog appscode/kubedb-catalog --install --version $KUBEDB_VERSION --namespace kube-system
 
     # Install nginx-ingress (except on minikube)
+    # ESP: Instalar nginx-ingress (excepto en minikube)
+    
     if [[ "$KUBIFY_ENGINE" != "minikube" ]]; then
       $HELM ${TILLER} upgrade nginx-ingress stable/nginx-ingress \
         --install \
@@ -574,6 +709,8 @@ function configure_cluster {
     fi
 
     # Install cert-manager for TLS
+    # ESP: Instalar cert-manager para TLS
+    
     CA_SECRET=`${KUBECTL_NS} create secret tls ca-key-pair \
       --cert=${K8S_DIR}/k8s/certs/ca.crt \
       --key=${K8S_DIR}/k8s/certs/ca.key \
@@ -583,12 +720,20 @@ function configure_cluster {
 
     # 4/9/2021: this 1.3.0 version is a 2 day old release (but certmanager should be updated regularly), but it looks to fix the some of the recent certmanager issues nicely, according to my latest rapid testing \
     #  efforts (refactor was necessary along with it) https://github.com/jetstack/cert-manager/releases
+    # ESP: # 9/4/2021: esta versión 1.3.0 es una versión anterior de 2 días (pero certmanager debe actualizarse regularmente), pero parece solucionar algunos de los problemas recientes de certmanager muy bien, 
+    # de acuerdo con mi última prueba rápida, esfuerzos (la refactorización era necesaria junto con ella) https://github.com/jetstack/cert-manager/releases
+    
     CERT_MANAGER_VERSION="v1.3.0"
     # CERT_MANAGER_CRD_VERSION="0.8" # Both these need to have the same minor version !!! IMPORTANT !!!
+    # ESP: CERT_MANAGER_CRD_VERSION = "0.8" # ¡¡¡Ambos necesitan tener la misma versión menor !!! IMPORTANTE !!!
     #$KUBECTL apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-${CERT_MANAGER_CRD_VERSION}/deploy/manifests/00-crds.yaml
-    $KUBECTL create ns cert-manager || echo 'cert-manager ns exists'
+    # ESP: $KUBECTL aplicar -f https://raw.githubusercontent.com/jetstack/cert-manager/release-${CERT_MANAGER_CRD_VERSION}/deploy/manifests/00-crds.yaml
+    
+    $KUBECTL create ns cert-manager || echo 'cert-manager ns exists' echo 'cert-manager ns existe'
     # set installCRDs=true is important after v0.10.0+
+    # ESP: set installCRDs = true es importante después de v0.10.0 +
     # https://www.thinktecture.com/en/kubernetes/ssl-certificates-with-cert-manager-in-kubernetes/
+    
     $HELM ${TILLER} upgrade cert-manager jetstack/cert-manager \
       --install \
       --version ${CERT_MANAGER_VERSION} \
@@ -597,6 +742,8 @@ function configure_cluster {
       --wait
 
     # Install reloader which watches configmaps and secrets and determines when to reload pods etc.
+    # ESP: Instale el recargador que observa los mapas de configuración y los secretos y determina cuándo recargar los pods, etc.
+    
     $HELM ${TILLER} upgrade reloader stakater/reloader \
       --install \
       --wait \
@@ -604,6 +751,8 @@ function configure_cluster {
       --namespace kube-system
 
     # Install External-DNS
+    # ESP: Instalar DNS externo
+    
     if [[ "$UPSTREAM" == "1" ]]; then
       cat <<EOF > ${WORK_DIR}/external-dns-values.yaml
 aws:
@@ -625,6 +774,7 @@ EOF
   } &> $KUBIFY_OUT
 
   echo "Create CRDs"
+  echo "Crear TARJETAS"
   {
     $KUBECTL_NS apply -f $MANIFESTS/kubify.yaml
   } &> $KUBIFY_OUT
@@ -632,6 +782,7 @@ EOF
   {
     if [[ -z "$UPSTREAM" ]] || [[ "$UPSTREAM" == "0" ]]; then
       echo "Applying local cert-manager automation manifests"
+      echo "Aplicación de manifiestos de automatización de cert-manager locales"
       cat <<EOF | ${KUBECTL_NS} apply -f -
 apiVersion: cert-manager.io/v1
 kind: Issuer
@@ -644,6 +795,7 @@ spec:
 EOF
     else
       echo "Applying cluster cert-manager automation manifests"
+      echo "Aplicación de manifiestos de automatización del administrador de certificados de clúster"
       cat <<EOF | ${KUBECTL} apply -f -
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -663,11 +815,17 @@ EOF
 }
 
 #TODO only run if local not in cloud
+# ESP: TODO solo se ejecuta si es local, no en la nube
+
 function install_aws_ecr_helper {
   # This Chart seemlessly integrates Kubernetes with AWS ECR (auth for registry in AWS ECR) https://artifacthub.io/packages/helm/architectminds/aws-ecr-credential
+  # ESP: Este gráfico integra perfectamente Kubernetes con AWS ECR (autenticación del registro en AWS ECR) https://artifacthub.io/packages/helm/architectminds/aws-ecr-credential
+  
   $HELM repo add architectminds https://architectminds.github.io/helm-charts/
 
   # TODO (high priority security topic): should this namespace be different than the services?
+  # ESP: TODO (tema de seguridad de alta prioridad): ¿este espacio de nombres debería ser diferente de los servicios?
+  
   $HELM install aws-ecr-credential architectminds/aws-ecr-credential --version 1.4.2 \
     --set-string aws.account=$AWS_ACCOUNT_ID \
     --set aws.region=$AWS_REGION \
@@ -693,12 +851,14 @@ function configure {
   MANIFESTS=${K8S_DIR}/k8s
 
   echo "Creating namespace"
+  echo "Creando espacio de nombres"
   {
     $KUBECTL apply -f $MANIFESTS/bootstrap.yaml
 
     while true; do
       sleep 1
       echo "Waiting for namespace $NAMESPACE"
+      echo "Esperando el espacio de nombres $NAMESPACE"
       if $KUBECTL get ns/$NAMESPACE; then
         break
       fi
@@ -711,11 +871,16 @@ function configure {
     install_aws_ecr_helper
   else
     echo "Unsupported KUBIFY_CONTAINER_REGISTRY $KUBIFY_CONTAINER_REGISTRY, currently supported values are dockerhub, ecr. To add an additional KUBIFY_CONTAINER_REGISTRY open an Issue or PR here: https://github.com/willyguggenheim/kubify"
+    echo "KUBIFY_CONTAINER_REGISTRY no admitido $KUBIFY_CONTAINER_REGISTRY, los valores admitidos actualmente son dockerhub, ecr. Para agregar un KUBIFY_CONTAINER_REGISTRY adicional, abra un Issue o PR aquí: https://github.com/willyguggenheim/kubify"
     exit 1
   fi
 
   # Set DNS
+  #ESP: Establecer DNS
+  
   echo "Configuring DNS and Trusted Certificates. SUDO password might be needed..."
+  echo "Configuración de DNS y certificados de confianza. Es posible que se necesite una contraseña SUDO ..."
+  
   {
     if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
       CLUSTER_IP=$($MINIKUBE ip)
@@ -724,6 +889,8 @@ function configure {
     fi
 
     echo "NOTE: This might ask for your computer password (as it needs sudo)."
+    echo "NOTA: Esto podría solicitar la contraseña de su computadora (ya que necesita sudo)".
+    
     ansible-playbook --connection=local --inventory=127.0.0.1, ${K8S_DIR}/k8s/ansible/configure.yaml \
       --ask-become-pass --extra-vars "cluster_ip=${CLUSTER_IP} local_domain=${KUBIFY_LOCAL_DOMAIN} ca_cert_path=${K8S_DIR}/k8s/certs/ca.crt" \
       --tags="dnsmasq,trust_ca_cert"
@@ -733,10 +900,13 @@ function configure {
       update_npm_secret
   elif [[ "$KUBIFY_CONTAINER_REGISTRY" == "ecr" ]]; then
     echo "Using S3 as artifact store"
+    echo "Usando S3 como almacén de artefactos"
   else
     echo "Unsupported KUBIFY_CONTAINER_REGISTRY $KUBIFY_CONTAINER_REGISTRY, currently supported values are dockerhub, ecr. To add an additional KUBIFY_CONTAINER_REGISTRY open an Issue or PR here: https://github.com/willyguggenheim/kubify"
+    echo "KUBIFY_CONTAINER_REGISTRY no admitido $ KUBIFY_CONTAINER_REGISTRY, los valores admitidos actualmente son dockerhub, ecr. Para agregar un KUBIFY_CONTAINER_REGISTRY adicional, abra un Issue o PR aquí: https://github.com/willyguggenheim/kubify"
     exit 1
   fi
+  
   # update_npm_secret
 
   # if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
@@ -750,14 +920,17 @@ function configure {
   configure_cluster
 
   echo "Creating secrets"
+  echo "Creando secretos"
   {
     echo `_get_secret dev kubify` | $KUBECTL_NS apply -f -
   } &> $KUBIFY_OUT
 
   echo "Building containers (Please be patient)"
+  echo "Construyendo contenedores (tenga paciencia)"
   _build_entrypoint      &> $KUBIFY_OUT
 
   echo "Starting containers (Please be patient)"
+  echo "Iniciando contenedores (tenga paciencia)"
   {
     SRC_MOUNT_PATTERN=`echo "$SRC_MOUNT" | sed 's/\\//\\\\\//g'`
     HOME_MOUNT_PATTERN=`echo "$HOME_MOUNT" | sed 's/\\//\\\\\//g'`
@@ -768,6 +941,7 @@ function configure {
         ENTRYPOINT_TEMPLATE=`cat "$MANIFESTS/entrypoint_s3.yaml" | sed "s/{{SRC_MOUNT}}/$SRC_MOUNT_PATTERN/g" | sed "s/{{HOME_MOUNT}}/$HOME_MOUNT_PATTERN/g"`
     else
       echo "please set env KUBIFY_CONTAINER_REGISTRY"
+      echo "establezca env KUBIFY_CONTAINER_REGISTRY"
       exit 1
     fi
     echo "$ENTRYPOINT_TEMPLATE"
@@ -785,16 +959,22 @@ function configure {
 
   until $KUBECTL get pods --all-namespaces -l app.kubernetes.io/name=kubedb | grep Running; do
     echo "Waiting for kubedb to download dependencies...."
+    echo "Esperando que kubedb descargue las dependencias ..."
     sleep 5
   done
 
   echo 'SUCCESS: What a rush!! You just saves years of precious coding time (AUTOMATED DEVOPS)!! Kubify for life!!'
+  echo 'ÉXITO: ¡¡Qué prisa !! ¡¡Simplemente ahorra años de valioso tiempo de codificación (DEVOPS AUTOMATIZADOS) !! ¡¡Kubify de por vida !!'
 
   # echo "Creating shared redis instance...."
+  # ESP: echo "Creando una instancia compartida de redis ..."
   # until $KUBECTL_NS apply -f ${K8S_DIR}/k8s/redis.yaml 2> /dev/null; do
   #   echo "Waiting for kubedb to download dependencies...."
+  #   ESP: echo "Esperando que kubedb descargue las dependencias ..."
   #   sleep 10
+  #   ESP: dormir 10
   # done
+  # ESP: Hecho
 
   # $KUBECTL_NS apply -f ${K8S_DIR}/k8s/redis.yaml
 }
@@ -802,6 +982,8 @@ function configure {
 function install {
   set -e
   echo "Ensuring system dependencies"
+  echo "Asegurar las dependencias del sistema"
+  
   if [[ "$OSTYPE" == "darwin"* ]]; then
     {
       if ! [ -x "$(command -v ansible)" ]; then
@@ -815,6 +997,7 @@ function install {
       then
         if ask "Root privileges will be necessary to configure the hyperkit driver for Minikube"; then
           echo "Configuring minikube driver..." &> $KUBIFY_OUT
+          echo "Configurando el controlador minikube ..." &> $ KUBIFY_OUT
           sudo chown root:wheel /usr/local/opt/docker-machine-driver-hyperkit/bin/docker-machine-driver-hyperkit
           sudo chmod u+s /usr/local/opt/docker-machine-driver-hyperkit/bin/docker-machine-driver-hyperkit
         else
@@ -833,16 +1016,20 @@ function install {
         pip3 install ansible
       fi
       echo "NOTE: This might ask for your computer password (as it needs sudo)."
+      echo "NOTA: Esto podría solicitar la contraseña de su computadora (ya que necesita sudo)".
       ansible-playbook --connection=local \
         ${K8S_DIR}/k8s/ansible/install_linux.yaml \
         --ask-become-pass -e ansible_python_interpreter=`which python3`
     } &> $KUBIFY_OUT
   else
     echo "'kubify install' not supported on $OSTYPE ... yet"
+    echo "'kubify install' no es compatible con $ OSTYPE ... todavía"
     exit 1
   fi
   echo "Remember to add ${SRC_DIR}/kubify/tools/bin to your \$PATH in your .bashrc, .zshrc, etc"
+  echo "Recuerde agregar $ {SRC_DIR} / kubify / tools / bin a su \ $ PATH en su .bashrc, .zshrc, etc."
   echo "Alternatively create a symlink to ${SRC_DIR}/kubify/tools/bin/kubify to your existing \$PATH"
+  echo "Alternativamente, cree un enlace simbólico a ${SRC_DIR}/ kubify / tools / bin / kubify a su \$PATH existente"
 }
 
 function db {
@@ -860,6 +1047,7 @@ function up {
 
   if [[ "$@" == "--skip-install" ]]; then
     echo "Skipping installation"
+    echo "Omitiendo la instalación"
   else
     install
   fi
@@ -869,6 +1057,7 @@ function up {
   if [[ "${KUBIFY_ENGINE}" == "minikube" ]]; then
     if [ "$RUNNING" != "Running" ]; then
       echo "Starting local cluster (Please be patient)"
+      echo "Iniciando clúster local (tenga paciencia)"
       {
         $MINIKUBE config set WantUpdateNotification false
         $MINIKUBE start \
@@ -882,6 +1071,7 @@ function up {
   elif [[ "${KUBIFY_ENGINE}" == "local" ]]; then
     if [ -z "${RUNNING}" ]; then
       echo "Error: Make sure Kubernetes is running locally."
+      echo "Error: asegúrese de que Kubernetes se esté ejecutando localmente".
       exit 1
     fi
   fi
@@ -896,6 +1086,7 @@ function down {
   if [ -z "${RUNNING}" ]
   then
     echo "Local cluster is not running"
+    echo "El clúster local no se está ejecutando"
   else
     if ask "Do you really want to stop the local cluster?"; then
       if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
@@ -911,17 +1102,21 @@ function check_local_env {
   if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
     if ! [ -x "$(command -v minikube)" ]; then
       echo 'Error: minikube is not installed. Run "kubify install" first.' >&2
+      echo 'Error: minikube no está instalado. Ejecute "kubify install" primero. ' > &2
       exit 1
     fi
     MK_STATUS=$($MINIKUBE status --profile ${PROFILE} | grep host | cut -d ':' -f2 | xargs)
     if [[ "$MK_STATUS" == "Stopped" ]] || [[ -z "$MK_STATUS" ]]; then
       echo "Stopped"
+      echo "Detenido"
     elif [[ "$MK_STATUS" == "Running" ]]; then
       echo "Running"
+      echo "Corriendo"
     fi
   elif [[ "$KUBIFY_ENGINE" == "local" ]]; then
     if ! [ -x "$(${KUBECTL} cluster-info)" ]; then
       echo "Running"
+      echo "Corriendo"
     fi
   fi
 }
@@ -930,6 +1125,7 @@ function local_env_running {
   RUNNING=`check_local_env`
 
   # debian fix for ansible-playbook missing after install (TODO: is this the right location for this)
+  # ESP: Corrección de debian para ansible-playbook que falta después de la instalación (TODO: ¿es esta la ubicación correcta para esto?)
   if [ -f "~/.profile" ]; then
     source ~/.profile || true
   fi
@@ -937,6 +1133,7 @@ function local_env_running {
   if [ -z "${RUNNING}" ]
   then
     echo "Local cluster is not running. (Hint: try 'kubify up')"
+    echo "El clúster local no se está ejecutando. (Sugerencia: intente 'kubify up')"
     exit 1
   fi
 }
@@ -945,8 +1142,10 @@ function display_running {
   if [ -z "$1" ]
   then
     echo "Local cluster is not running. (Hint: try 'kubify up')"
+    echo "El clúster local no se está ejecutando. (Sugerencia: intente 'kubify up')"
   else
     echo "Local cluster is running"
+    echo "El clúster local se está ejecutando"
   fi
 }
 
@@ -956,8 +1155,13 @@ function delete {
       $MINIKUBE delete --profile $PROFILE &> $KUBIFY_OUT
     elif [[ "$KUBIFY_ENGINE" == "local" ]]; then
       echo "Deleting kubify namespace ${NAMESPACE}"
+      echo "Eliminando el espacio de nombres kubify ${NAMESPACE}"
       #if namespace takes longer than 30 seconds to delete (provider hanging), then re-install kubernetes
-      timeout 30 ${KUBECTL} delete ns ${NAMESPACE} || osascript -e 'quit app "Docker"' && rm -f "~/Library/Group Containers/group.com.docker/pki" && open --background -a Docker && while ! $KUBECTL get namespaces 2>&1;   do     echo "Waiting for Kubernetes for Docker Desktop to Install and Configure" && sleep 2;   done &> $KUBIFY_OUT
+      #ESP: si el espacio de nombres tarda más de 30 segundos en eliminarse (proveedor colgado), vuelva a instalar kubernetes
+      timeout 30 ${KUBECTL} delete ns ${NAMESPACE} || osascript -e 'quit app "Docker"' && rm -f "~/Library/Group Containers/group.com.docker/pki" && open --background -a Docker && while ! $KUBECTL get namespaces 2>&1;   do     
+      echo "Waiting for Kubernetes for Docker Desktop to Install and Configure" && sleep 2; 
+      echo "Esperando a que Kubernetes para que Docker Desktop se instale y configure" && sleep 2;
+      done &> $KUBIFY_OUT
     fi
   fi
 }
@@ -966,6 +1170,7 @@ function status {
   RUNNING=`check_local_env`
 
   echo "Kubify Engine: $KUBIFY_ENGINE"
+  echo "Motor de Kubify: $KUBIFY_ENGINE"
   display_running $RUNNING
 
   if [ ! -z "${RUNNING}" ]
@@ -980,8 +1185,10 @@ function status {
 function check_kubify {
   BASE=`basename "$(dirname $PWD)"`
   # sanity check, this command should be run in the app dir
+  #ESP: comprobación de cordura, este comando debe ejecutarse en el directorio de la aplicación
   if [[ "$BASE" != "backend" && "$BASE" != "frontend" ]]; then
     echo "This command should be run in a service directory located under: backend,frontend"
+    echo "Este comando debe ejecutarse en un directorio de servicios ubicado en: backend, frontend"
     exit 1
   fi
 }
@@ -998,30 +1205,53 @@ function post_to_slack {
   if [[ $KUBIFY_CI == '1' ]]; then
     if [ -x `which slack` ] ; then
       #Example Chat Post
+      # ESP: #Ejemplo de publicación de chat
       #
       # $1 is the channel you want to post to
+      # ESP: $ 1 es el canal en el que quieres publicar
       # $2 is the title you are setting for the message
+      # ESP: $ 2 es el título que está configurando para el mensaje
       # $3 is the text you want to send
+      # ESP: $ 3 es el texto que desea enviar
       # !OPTIONAL!
+      # ESP:OPCIONAL!
       # $4 is actions, such as posting a button or link
+      # ESP: $ 4 son acciones, como publicar un botón o enlace
       # $5 is the color of the message
+      # ESP: $ 5 es el color del mensaje
       #
       #slack chat send \
+      # ESP: Enviar chat flojo\
       #  --actions ${actions} \
+      # ESP: --acciones ${acciones} \
       #  --author ${author} \
+      # ESP: --autor ${autor}\
       #  --author-icon ${author_icon} \
+      # ESP: --icono de autor ${icono de autor}\
       #  --author-link ${author-link} \
+      # ESP: --enlace-de-autor ${enlace-de-autor}\
       #  --channel ${channel} \
+      # ESP: --canal ${canal}\
       #  --color ${color} \
+      # ESP: --color ${color}\
       #  --fields ${fields} \
+      # ESP: --campos ${campos}\
       #  --footer ${footer} \
+      # ESP: --pie-de-página ${pie-de-página}\
       #  --footer-icon ${footer-icon} \
+      # ESP: --icono-de-pie-de-página ${icono-de-pie-de-página}\
       #  --image '${image}' \
+      # ESP: --imagen '${imagen}'\
       #  --pretext '${pretext}' \
-      #  --text '${slack-text}' \
+      # ESP: --pretexto '${pretexto}'\
+      #  --text '${slack-text}'\
+      # ESP: --texto '${texto-flojo}'\
       #  --time ${time} \
+      # ESP: --tiempo ${tiempo}\
       #  --title ${title} \
+      # ESP: --título {títiulo}\
       #  --title-link ${title-link}
+      # ESP: --enlace-de-título ${enlace-de-título}\
       #
 
       if [ "$#" == 5 ]; then
@@ -1056,6 +1286,8 @@ function services {
   fi
 
   # Ignore the minikube stuff
+  # ESP: Ignora las cosas de minikube
+  
   SERVICES=$(find ${SRC_DIR} -type f -name 'kubify.yml' -exec dirname {} \; | grep -v "kubify/kubify" | xargs basename)
 
   MAX_WIDTH=20
@@ -1095,18 +1327,22 @@ function clean {
 
   if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
     echo "Clearing cached images in Minikube..."
+    echo "Borrando imágenes en caché en Minikube ..."
     $MINIKUBE Cache delete $(minikube cache list) &> $KUBIFY_OUT
   fi
 
   echo "Clearing unused docker images for services..."
+  echo "Borrando imágenes de Docker no utilizadas para servicios ..."
   for APP_NAME in `services --list`
   do
     IMAGE=`image_name $APP_NAME`
     echo "Removing old images for $APP_NAME..."
+    echo "Eliminando imágenes antiguas de $ APP_NAME ..."
     docker images | grep $IMAGE | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi $IMAGE:{} &> $KUBIFY_OUT
   done
 
   echo "Pruning unused images"
+  echo "Depuración de imágenes no utilizadas"
   docker system prune --force
 }
 
@@ -1117,6 +1353,7 @@ function check_skaffold {
 
   if [ ! -f $KUBIFY_FILE ]; then
     echo "Have you run 'kubify init' yet?"
+    echo "¿Ya ha ejecutado 'kubify init'?"
     exit 1
   fi
 
@@ -1135,6 +1372,7 @@ function publish {
   APP_DIR=$PWD
   APP_NAME=`basename $APP_DIR`
   echo "Publishing application '$APP_NAME'"
+  echo "Publicando aplicación '$APP_NAME'"
   _init "$APP_DIR" "common,generate_k8s,build_image" "app_cicd_build_image_extra_versions=latest,${EXTRA_VERSIONS}"
 }
 
@@ -1162,6 +1400,7 @@ function dir {
 function run-all {
   if [ "$#" -eq 0 ]; then
     echo "there was no services passed in to \"run-all\" command, so running all services.."
+    echo "no se pasaron servicios al comando \" ejecutar-todo \", por lo que ejecutar todos los servicios ..."
     SERVICES=`services --list`
   else
     SERVICES="$@"
@@ -1181,6 +1420,7 @@ function run-all {
       kubify run $version
     else
       echo "Error: Service '${service}' doesn't exist"
+      echo "Error: el servicio '${service}' no existe"
     fi
   done
 }
@@ -1188,6 +1428,7 @@ function run-all {
 function build-run-all {
   if [ "$#" -eq 0 ]; then
     echo "there was no services passed in to \"run-all\" command, so running all services.."
+    echo "no se pasaron servicios al comando \" ejecutar-todo \", por lo que ejecutar todos los servicios ..."
     SERVICES=`services --list`
   else
     SERVICES="$@"
@@ -1206,6 +1447,7 @@ function build-run-all {
       kubify run
     else
       echo "Error: Service '${service}' doesn't exist"
+      echo "Error: el servicio '${service}' no existe"
     fi
   done
 }
@@ -1231,6 +1473,7 @@ function stop-all {
       kubify stop
     else
       echo "Error: Service '${service}' doesn't exist"
+      echo "Error: el servicio '${service}' no existe"
     fi
   done
 }
@@ -1240,7 +1483,9 @@ function run {
   check_skaffold
   APP_NAME=`basename $PWD`
   echo "Starting application '$APP_NAME'"
+  echo "Iniciando la aplicación '$APP_NAME'"
   echo "Once the application is running, get its URL by running 'kubify url'"
+  echo "Una vez que la aplicación se esté ejecutando, obtenga su URL ejecutando 'kubify url'"
   init
   _stop $APP_NAME
 
@@ -1282,12 +1527,16 @@ function build-run-kubify {
     mkdir -p ${WORK_DIR}/${ENV}/logs
 
     echo "Building & running Kubify core stack services .."
+    echo "Creación y ejecución de servicios de pila central de Kubify ..."
     echo "To tail logs: tail -f ${WORK_DIR}/${ENV}/logs/build-run-kubify-CORE*.log"
+    echo "A los registros de cola: tail -f ${WORK_DIR} / ${ENV} /logs/build-run-kubify-CORE*.log"
     echo "To stop builder: control-c (or if you must: pkill -f kubify)"
+    echo "Para detener el constructor: control-c (o si es necesario: pkill -f kubify)"
 
     trap 'kill $BGPID1;kill $BGPID2; exit' INT
 
     echo "The date before build is: `date`"
+    echo "La fecha anterior a la compilación es:` fecha` "
     kubify build-run-all \
       be-svc &> ${WORK_DIR}/${ENV}/logs/build-run-kubify-CORE1.log &
     BGPID1=$!
@@ -1297,6 +1546,7 @@ function build-run-kubify {
 
     wait
     echo "The date after build is: `date`"
+    echo "La fecha después de la construcción es:` fecha` "
     kubify logs *
 }
 
@@ -1305,12 +1555,16 @@ function build-start-kubify {
     mkdir -p ${WORK_DIR}/${ENV}/logs
 
     echo "Building & running Kubify core stack services .."
+    echo "Creación y ejecución de servicios de pila central de Kubify ..."
     echo "To tail logs: tail -f ${WORK_DIR}/${ENV}/logs/build-run-kubify-CORE*.log"
+    echo "A los registros de cola: tail -f $ {WORK_DIR} / $ {ENV} /logs/build-run-kubify-CORE*.log"
     echo "To stop builder: control-c (or if you must: pkill -f kubify)"
+    echo "Para detener el constructor: control-c (o si es necesario: pkill -f kubify)"
 
     trap 'kill $BGPID1;kill $BGPID2; exit' INT
 
     echo "The date before build is: `date`"
+    echo "La fecha anterior a la compilación es:` fecha` "
     cd ${WORK_DIR}/../backend/be-svc
     kubify start be-svc &> ${WORK_DIR}/${ENV}/logs/build-run-kubify-CORE_be-svc.log &
     BGPID1=$!
@@ -1320,6 +1574,7 @@ function build-start-kubify {
 
     wait
     echo "The date after build is: `date`"
+    echo "La fecha después de la construcción es:` fecha` "
     kubify logs *
 }
 
@@ -1330,15 +1585,19 @@ function start {
   APP_DIR=$PWD
 
   echo "Starting application '$APP_NAME' for local development. Changes will be watched."
+  echo "Iniciando la aplicación '$APP_NAME' para el desarrollo local. Se observarán los cambios".
   echo "Once the application is running, get its URL by running 'kubify url'"
+  echo "Una vez que la aplicación se esté ejecutando, obtenga su URL ejecutando 'kubify url'"
 
   init
 
   FALLBACK=0
   if [ ! -f ${WORK_DIR}/${ENV}/${APP_NAME}/Dockerfile.dev ]; then
     echo "WARNING: No 'Dockerfile.dev' defined for '$APP_NAME', using 'Dockerfile' instead. Run 'kubify help' for more details"
+    echo "ADVERTENCIA: No 'Dockerfile.dev' definido para '$APP_NAME', usando 'Dockerfile' en su lugar. Ejecute 'kubify help' para más detalles"
     if [ ! -f ${APP_DIR}/Dockerfile ]; then
       echo "ERROR: No 'Dockerfile' defined for '$APP_NAME'. "
+      echo "ERROR: No hay 'Dockerfile' definido para '$ APP_NAME'".
       exit 1
     else
       FALLBACK='1'
@@ -1373,6 +1632,7 @@ function stop {
   APP_NAME=`basename $PWD`
   init
   echo "Stopping application '$APP_NAME'"
+  echo "Deteniendo la aplicación '$ APP_NAME'"
   _stop $APP_NAME
 }
 
@@ -1418,6 +1678,7 @@ function cmd {
 
   if [[ $POD == '' ]]; then
     echo "The application '$APP_NAME' is not running."
+    echo "La aplicación '$ APP_NAME' no se está ejecutando".
     exit 1
   fi
 
@@ -1444,6 +1705,8 @@ function __setup_symlinks {
 function setup_symlinks {
   echo "Setting up symlinks in entrypoint container" &> $KUBIFY_OUT
   # workaroud for race condition during ECR compatibility feature development (will clean this redundant code up later)
+  echo "Configuración de enlaces simbólicos en el contenedor de punto de entrada" &> $ KUBIFY_OUT
+  # ESP: solución alternativa para la condición de carrera durante el desarrollo de la función de compatibilidad de ECR (limpiará este código redundante más adelante)
   run_in_entrypoint 'ln -sf /data/home/.aws /root/ && ln -sf /data/home/.ssh /root/ && ln -sf /data/home/.gitconfig /root/'
   run_in_entrypoint kubify __setup_symlinks || true
 }
@@ -1455,7 +1718,9 @@ function wait_for_deployment {
   set_context
   {
     # TODO: Find a better way
+    # ESP: TODO: Encuentra una mejor manera
     echo "Waiting for deployment $1 in namespace $2"
+    echo "Esperando la implementación $1 en el espacio de nombres $2"
     $KUBECTL rollout status -w deployment/$1 -n $2
   } &> $KUBIFY_OUT
 }
@@ -1463,7 +1728,9 @@ function wait_for_deployment {
 function check_containers {
   while true; do
     # TODO (urgent task): fix folder mounts on WSL2 (for live code listening), for windows users
+    # ESP: # TODO (tarea urgente): arregla los montajes de carpetas en WSL2 (para escuchar código en vivo), para usuarios de Windows
     # and then remove || true
+    # ESP: y luego quitar || true
     exec kubify > /dev/null || true
     if [ "$?" -ne 0 ]; then
       if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
@@ -1506,17 +1773,21 @@ function init {
 
   if [ ! -d "$APP_DIR/secrets" ]; then
     echo "It looks like you haven't imported secrets from AWS. Checking..."
+    echo "Parece que no ha importado secretos de AWS. Comprobando ..."
     kubify secrets import all
   fi
 
   # Check for config.yml or Dockerfile and migrate only if kubify.yml doesn't exist
+  # ESP: Verifique config.yml o Dockerfile y migre solo si kubify.yml no existe
   if [[ "$RERUN" == "1" ]] || ( [[ ! -f $KUBIFY_CONFIG ]] ) || ( [[ -f $DOCKERFILE ]] && [[ ! -f $KUBIFY_CONFIG ]] ); then
     TAGS="${TAGS}"
   fi
 
   echo "Initializing '$APP_NAME'"
+  echo "Inicializando '$ APP_NAME'"
 
   # Always generate k8s-related resources from kubify.yml
+  # ESP: Genere siempre recursos relacionados con k8s desde kubify.yml
   TAGS="${TAGS},generate_k8s"
 
   _init "$APP_DIR" "$TAGS"
@@ -1534,9 +1805,12 @@ function _init {
     # Create the configuration for the application
     {
       echo "Running service playbook for $APP_NAME with tags: $TAGS"
+      echo "Ejecución de la guía del servicio para $APP_NAME con etiquetas: $TAGS"
 
       # Only expose the service as a LoadBalancer in Minikube.
+      # ESP: Solo exponga el servicio como LoadBalancer en Minikube.
       # Otherwise, it's only available through Ingress
+      # ESP: De lo contrario, solo está disponible a través de Ingress.
       if [[ "$KUBIFY_ENGINE" == "minikube" ]]; then
         EXPOSE_SERVICE_FLAG="expose_service=true"
       else
@@ -1592,6 +1866,7 @@ function secrets {
 
   if [[ $ENV == 'all' ]] && [[ $1 != 'import' ]]; then
     echo "'all' is only valid for 'kubify secrets import'"
+    echo "'todo' solo es válido para 'kubify secrets import'"
     exit 1
   fi
 
@@ -1604,23 +1879,29 @@ function secrets {
             for env in "${ALL_ENV[@]}"
             do
               echo "Importing secrets for ${APP_NAME} for ${env} environment"
+              echo "Importando secretos para ${APP_NAME} para el entorno ${env}"
               import_secret $env $APP_DIR &> $KUBIFY_OUT
             done
           else
             echo "Importing secrets for ${APP_NAME} for ${ENV} environment"
+            echo "Importando secretos para ${APP_NAME} para el entorno ${ENV}"
             import_secret $ENV $APP_DIR &> $KUBIFY_OUT
           fi
           ;;
       create)
           echo "Creating secrets for ${APP_NAME} for ${ENV} environment"
+          echo "Creando secretos para ${APP_NAME} para el entorno ${ENV}"
           kubesec edit -if ${SECRETS_FILE} --key="${!KEY_VAR}"
           echo "Reloading secrets in-cluster"
+          echo "Recarga de secretos en el clúster"
           _generate_manifests "$APP_DIR"
           ;;
       edit)
           echo "Editing secrets for ${APP_NAME} for ${ENV} environment"
+          echo "Editando secretos para ${APP_NAME} para el entorno ${ENV}"
           kubesec edit -if ${SECRETS_FILE} --key="${!KEY_VAR}"
           echo "Reloading secrets in-cluster"
+          echo "Recarga de secretos en el clúster"
           _generate_manifests "$APP_DIR"
           ;;
       view)
@@ -1629,6 +1910,7 @@ function secrets {
           ;;
       *)
           echo "Invalid option - $1"
+          echo "Opción no válida - $1"
   esac
 }
 
@@ -1666,17 +1948,27 @@ function _get_secret {
   ENCRYPT=${3}
 
   SECRET_NAME=kubify_rocks_${ENV}_${APP_NAME}
+  
   # create initial secret if not exist
+  # ESP: Crear secreto inicial si no existe
   # aws secretsmanager delete-secret --region $AWS_REGION --secret-id kubify_rocks_${ENV}_${APP_NAME}
   # or for without backup (fast deletion of secretsmanager secret on a NON-PROD cluster for rapid development of this file, but be careful): aws secretsmanager delete-secret --region $AWS_REGION --secret-id kubify_rocks_${ENV}_${APP_NAME} --force-delete-without-recovery
+  # ESP: o sin copia de seguridad (eliminación rápida del secreto de secretsmanager en un clúster NO PROD para un desarrollo rápido de este archivo, pero tenga cuidado): aws secretsmanager delete-secret --region $ AWS_REGION --secret-id kubify_rocks _ $ {ENV} _ $ {APP_NAME} --force-delete-without-recovery
   # random secret string used for decryption salt in the deployed local or deployed kubernetes env
+  # ESP: cadena secreta aleatoria utilizada para el descifrado de sal en el entorno de kubernetes implementado local o implementado
+  
   aws secretsmanager create-secret --region $AWS_REGION --name kubify_rocks_${ENV}_${APP_NAME} \
     --description "kubify_rocks_${ENV}_${APP_NAME}" \
-    --secret-string {'"'"SecretString"'"':$(shuf -i 1-10000000000000000000 -n 1 )} || true  #NOTE: but you might have to wait for secretsmanager secret scheduled deletion if you deleted the secret recently https://www.youtube.com/watch?v=hxvJQcFRksM
+    --secret-string {'"'"SecretString"'"':$(shuf -i 1-10000000000000000000 -n 1 )} || true  
+    #NOTE: but you might have to wait for secretsmanager secret scheduled deletion if you deleted the secret recently https://www.youtube.com/watch?v=hxvJQcFRksM
+    # ESP: NOTA: pero es posible que deba esperar la eliminación programada del secreto de secretsmanager si eliminó el secreto recientemente https://www.youtube.com/watch?v=hxvJQcFRksM
+    
   # jq map_values doc https://stedolan.github.io/jq/manual/
+  
   SECRET_DATA=$(aws secretsmanager get-secret-value --region $AWS_REGION --secret-id $SECRET_NAME | jq -r .SecretString | jq -r 'map_values(. | @base64)')
   if [ -z "$SECRET_DATA" ]; then
       echo "\SECRET_DATA came back empty, debug that first!"
+      echo "\SECRET_DATA volvió vacío, ¡depúralo primero!"
       exit 1
   fi
   ENV_UPPER=`echo ${ENV} | awk '{ print toupper($0) }'`
@@ -1724,6 +2016,7 @@ function deploy_env {
   # Run the env playbook
   {
     echo "Running env playbook for $ENV with tags: $TAGS"
+    echo "Ejecutando el libro de jugadas de env para $ENV con etiquetas: $TAGS"
 
     ansible-playbook \
       --connection=local \
@@ -1757,6 +2050,7 @@ function deploy {
     cd ${SRC_DIR}/frontend/${APP_NAME}
   else
     echo "Error: Service $APP_NAME does not exist."
+    echo "Error: el servicio $APP_NAME no existe".
     exit 1
   fi
 
@@ -1765,6 +2059,7 @@ function deploy {
   APP_DIR=$PWD
   CI_BUILD_IMAGE=`cicd_build_image_name $APP_NAME`
   echo "Deploying application $APP_NAME (version: $APP_VERSION) to cluster $CLUSTER using environment profile $PROFILE in namespace $NAMESPACE"
+  echo "Implementando la aplicación $APP_NAME (versión: $APP_VERSION) en el clúster $CLUSTER usando el perfil de entorno $PROFILE en el espacio de nombres $NAMESPACE"
   SERVICE_PROFILE=${SERVICE_PROFILE} UPSTREAM=1 _init "$APP_DIR" "common,generate_k8s,deploy_service" "kubify_domain_env=${NAMESPACE} app_config_sha=${CONFIG_VERSION} deploy_namespace=$NAMESPACE aws_profile=$AWS_ADMIN_PROFILE app_dir=$APP_DIR deploy_cluster_name=$CLUSTER deploy_image=${CI_BUILD_IMAGE}:${APP_VERSION} skaffold_config=${WORK_DIR}/${ENV}/${APP_NAME}/skaffold.yaml skaffold_profile=$BUILD_PROFILE undeploy=no"
 }
 
@@ -1782,6 +2077,7 @@ function environments {
         check_arg $ENV "No Environment (dev/test/stage/prod) specified!"
         if [ ! -f ${ENV_FILE} ]; then
           echo "Error: Environment ${ENV} does not exist!"
+          echo "Error: ¡El entorno ${ENV} no existe!"
           exit
         fi
 
@@ -1806,6 +2102,7 @@ function environments {
         check_arg $ENV "No Environment (dev/test/stage/prod) specified!"
         if [ ! -f ${ENV_FILE} ]; then
           echo "Error: Environment ${ENV} does not exist!"
+          echo "Error: ¡El entorno ${ENV} no existe!"
           exit 1
         fi
         $KUBECTL --context kubify-${ENV} get environments ${ENV} -o yaml | yq .
@@ -1814,9 +2111,11 @@ function environments {
         check_arg $ENV "No Environment (dev/test/stage/prod) specified!"
         if [ ! -f ${ENV_FILE} ]; then
           echo "Error: Environment ${ENV} does not exist!"
+          echo "Error: ¡El entorno ${ENV} no existe!"
           exit 1
         fi
         echo "Error: 'kubify environments status' not implemented yet!"
+        echo "Error: '¡el estado de los entornos de kubify' aún no se ha implementado!"
         exit 1
         ;;
       get-context)
@@ -1834,6 +2133,7 @@ function environments {
         check_arg $ENV "No Environment (dev/test/stage/prod) specified!"
         if [ ! -f ${ENV_FILE} ]; then
           echo "Error: Environment ${ENV} does not exist!"
+          echo "Error: ¡El entorno ${ENV} no existe!"
           exit 1
         fi
         TO_ENV=${3}
@@ -1841,6 +2141,7 @@ function environments {
 
         if [ "${ENV}" == "${TO_ENV}" ]; then
           echo "Error: Can't diff an environment with itself!"
+          echo "Error: ¡No se puede diferenciar un entorno consigo mismo!"
           exit 1
         fi
 
@@ -1857,20 +2158,27 @@ function environments {
 
         printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
         echo "Environment Diff"
+        echo "Diferencia de entorno"
         rm -f ${WORK_DIR}/compare_env_1.json ${WORK_DIR}/compare_env_2.json
         echo "${ENV_JSON}" | jq -r "{kubify_version,services}" > ${WORK_DIR}/compare_env_1.json
         echo "${TO_ENV_JSON}" | jq -r "{kubify_version,services}" > ${WORK_DIR}/compare_env_2.json
         json-diff ${WORK_DIR}/compare_env_1.json ${WORK_DIR}/compare_env_2.json
 
         # Diff the kubify tool
+        # ESP: Diferenciar la herramienta kubify
+        
         KUBIFY_VERSION_1=$(echo $ENV_JSON | jq -r ".kubify_version")
         KUBIFY_VERSION_2=$(echo $TO_ENV_JSON | jq -r ".kubify_version")
         printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
         echo "Kubify Diff"
+        echo "Diferenciar Kubify"
         git --no-pager diff ${KUBIFY_VERSION_1}..${KUBIFY_VERSION_2} ${SRC_DIR}/tools/kubify
 
         # Diff the configs
+        # ESP: Diferenciar las configuraciones
+        
         echo "Services Diff"
+        echo "Diferencia de servicios"
 
         for service in ${SERVICES}; do
           SERVICE_DIR=`kubify dir $service`
@@ -1884,19 +2192,23 @@ function environments {
           SHOW_CONFIG_DIFF=1
 
           echo "Diff for $service between $ENV and $TO_ENV"
+          echo "Diferencia por $service entre $ENV y $TO_ENV"
 
           if [ "${CODE_VERSION_1}" == "null" ]; then
             echo "$service doesn't exist in environment \"$ENV\""
+            echo "$ service no existe en el entorno \" $ENV \""
             SHOW_CODE_DIFF=
           fi
 
           if [ "${CODE_VERSION_2}" == "null" ]; then
             echo "$service doesn't exist in environment \"$TO_ENV\""
+            echo "$ service no existe en el entorno \" $ TO_ENV \""
             SHOW_CODE_DIFF=
           fi
 
           if [ "${CODE_VERSION_1}" == "${CODE_VERSION_2}" ]; then
             echo "Info: Code for $service has no differences between $ENV and $TO_ENV"
+            echo "Información: el código para $service no tiene diferencias entre $ENV y $TO_ENV"
             SHOW_CODE_DIFF=
           fi
 
@@ -1910,11 +2222,13 @@ function environments {
 
           if [ ! -z "${SHOW_CODE_DIFF}" ]; then
             echo "Code Diff"
+            echo "Diferencia de código"
             git --no-pager diff "@kubify/${service}@${CODE_VERSION_1}".."@kubify/${service}@${CODE_VERSION_2}" ${SERVICE_DIR} ":(exclude)${SERVICE_DIR}/config" ":(exclude)${SERVICE_DIR}/secrets"
           fi
 
           if [ ! -z "${SHOW_CONFIG_DIFF}" ]; then
             echo "Config Diff"
+            echo "Diferencia de configuración"
 
             REL_SERVICE_DIR=`RELATIVE=1 kubify dir $service`
 
@@ -1927,6 +2241,7 @@ function environments {
         ;;
       *)
         echo "Invalid option - $1"
+        echo "Opción no válida - $1"
   esac
 }
 
@@ -1949,6 +2264,7 @@ function undeploy {
     cd ${SRC_DIR}/frontend/${APP_NAME}
   else
     echo "Error: Service $APP_NAME does not exist."
+    echo "Error: el servicio $APP_NAME no existe".
     exit 1
   fi
 
@@ -1957,6 +2273,7 @@ function undeploy {
   APP_DIR=$PWD
   CI_BUILD_IMAGE=`cicd_build_image_name $APP_NAME`
   echo "Undeploying application $APP_NAME from cluster $CLUSTER using environment profile $ENV in namespace $NAMESPACE"
+  echo "Anulando la implementación de la aplicación $APP_NAME del clúster $CLUSTER usando el perfil de entorno $ENV en el espacio de nombres $NAMESPACE"
   _init "$APP_DIR" "common,generate_k8s,deploy_service" "deploy_namespace=$NAMESPACE aws_profile=$AWS_ADMIN_PROFILE app_dir=$APP_DIR deploy_cluster_name=$CLUSTER deploy_image=${CI_BUILD_IMAGE}:${APP_VERSION} skaffold_config=${WORK_DIR}/${ENV}/${APP_NAME}/skaffold.yaml skaffold_profile=$BUILD_PROFILE undeploy=yes"
 }
 
@@ -1973,11 +2290,13 @@ function _new {
 
   if [ -d "${APP_DIR}" ]; then
     echo "Error: The app '$APP_NAME' already exists!"
+    echo "Error: ¡La aplicación '$APP_NAME' ya existe!"
     exit
   fi
 
   if [ "${#APP_NAME}" -gt 17 ]; then
     echo "Error: Name of app (${APP_NAME}) is too long (${#APP_NAME} chars), please keep it under 18 characters!"
+    echo "Error: el nombre de la aplicación (${APP_NAME}) es demasiado largo (caracteres ${# APP_NAME}), ¡manténgalo por debajo de los 18 caracteres!"
     exit
   fi
 
@@ -1998,6 +2317,7 @@ EOF
   case "$choice" in
     1)
       echo "Using backend template..."
+      echo "Usando plantilla de backend ..."
       mkdir -p ${APP_DIR}
       cp -R ${TEMPLATES_DIR}/backend/* ${APP_DIR}
       envsubst '${APP_NAME}' < ${TEMPLATES_DIR}/backend/run.sh > ${APP_DIR}/run.sh
@@ -2005,6 +2325,7 @@ EOF
       ;;
     2)
       echo "Using frontend template..."
+      echo "Usando plantilla de frontend ..."
       mkdir -p ${APP_DIR}
       cp -R ${TEMPLATES_DIR}/frontend/* ${APP_DIR}
       envsubst '${APP_NAME}' < ${TEMPLATES_DIR}/frontend/package.json > ${APP_DIR}/package.json
@@ -2013,6 +2334,7 @@ EOF
       ;;
     *)
       echo "Unknown template name, exiting..."
+      echo "Nombre de plantilla desconocido, saliendo ..."
       exit
     ;;
   esac
@@ -2023,6 +2345,7 @@ function tf_atlantis {
 
   if [ -z "${TF_BACKEND_CREDENTIALS}" ]; then
     echo "Error: TF_BACKEND_CREDENTIALS is not set. Aborting"
+    echo "Error: TF_BACKEND_CREDENTIALS no está configurado. Abortando"
     exit 1
   fi
 
@@ -2042,6 +2365,7 @@ function publish_atlantis_image {
 function check_ci_mode {
   if [[ $KUBIFY_CI != '1' ]]; then
     echo "'kubify $1' can be only run in CI mode."
+    echo "'kubify $1' solo se puede ejecutar en modo CI".
     exit 1
   fi
 }
@@ -2184,7 +2508,9 @@ read_flag_verbose
 if [ "$*" == "" ]; then
   help
 else
+
   # Update the kube context
+  # ESP: Actualizar el contexto de kube
   if [ -x "$(command -v kubectx)" ]; then
     kubectx $PROFILE &> /dev/null
   fi
