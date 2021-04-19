@@ -1,9 +1,9 @@
-- name: Read environment config
+- name: Read environment config (ESP: Leer la configuración del entorno)
   include_vars:
     file: "{{ deploy_config_path }}"
     name: deploy_config
 
-- name: Read values
+- name: Read values (ESP: Leer valores) 
   set_fact:
     kubify_version: "{{ deploy_config | json_query('kubify_version') }}"
     kubify_cli: "{{ src_dir }}/tools/kubify/cli/kubify"
@@ -11,13 +11,13 @@
     target_cluster: "{{ deploy_config | json_query('target.cluster') }}"
     services: "{{ deploy_config | json_query('services') }}"
 
-- name: Read environment variables
+- name: Read environment variables (ESP: Leer variables de entorno)
   set_fact:
     registry_secret_name: registry-pull-secret
     registry_username: "{{ lookup('env','DOCKER_USER') }}"
     registry_password: "{{ lookup('env','DOCKER_PASSWORD') }}"
 
-- name: Create templates
+- name: Create templates (ESP: Crea plantillas)
   set_fact:
     namespace_template: |
       ---
@@ -26,45 +26,45 @@
       metadata:
         name: {{ environment_name }}
 
-- name: Switch kubify version
+- name: Switch kubify version (ESP: Cambiar la versión de kubify)
   shell: |
     kubify switch_version {{ kubify_version }}
 
-- name: Compute old environment config
+- name: Compute old environment config (ESP: Calcular la configuración del entorno antiguo) 
   set_fact:
     old_environment_path: "{{ kubify_dir }}/{{ environment_name }}.old.yaml"
 
-- name: Update EKS config
+- name: Update EKS config (ESP: Actualizar la configuración de EKS) 
   shell: |
     AWS_PROFILE={{ aws_profile }} aws eks update-kubeconfig --name {{ target_cluster }}
 
-- name: Remove old config
+- name: Remove old config (ESP: Quitar configuración antigua)
   file:
     path: "{{ old_environment_path }}"
     state: absent
 
-- name: Get existing environment
+- name: Get existing environment (ESP: Obtenga el entorno existente)
   shell: |
     kubectl get environment {{ environment_name }} -o yaml > {{ old_environment_path }}
   register: existing_environment
   ignore_errors: yes
 
-- name: Parse existing environment
+- name: Parse existing environment (ESP: Analizar el entorno existente)
   include_vars:
     file: "{{ old_environment_path }}"
     name: old_deploy_config
 
-- name: Undeploy environment
+- name: Undeploy environment (ESP: Anular la implementación del entorno)
   shell: |
     kubectl delete ns {{ environment_name }}
   when: undeploy_env == "yes"
 
-- name: Create namespace for environment
+- name: Create namespace for environment (ESP: Crear un espacio de nombres para el medio ambiente)
   shell: |
     echo "{{ namespace_template }}" | kubectl apply -f -
   when: undeploy_env == "no"
 
-- name: Configure image pull secrets for environment
+- name: Configure image pull secrets for environment (ESP: Configurar secretos de extracción de imágenes para el entorno)
   shell: "{{ item }}"
   no_log: True
   with_items:
@@ -78,19 +78,19 @@
     - 'kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"{{ registry_secret_name }}\"}]}" -n {{ environment_name }}'
   when: undeploy_env == "no"
 
-- name: Remove environment object
+- name: Remove environment object (ESP: Eliminar objeto de entorno)
   shell: |
     kubectl delete environment {{ environment_name }}
   when: undeploy_env == "yes"
 
-- name: Diff services
+- name: Diff services (ESP: Servicios de diferencia)
   set_fact:
     existing_kubify_version: "{{ old_deploy_config | json_query('kubify_version') }}"
     existing_services: "{{ old_deploy_config | json_query('services') | default({}, true) }}"
     services_to_deploy: "{{ services }}"
   when: undeploy_env == "no"
 
-- name: Deploy services
+- name: Deploy services (ESP: Implementar servicios)
   shell: |
     ({{ kubify_cli }} deploy {{ item.key }} {{ target_cluster }} {{ environment_name }} {{ item.value.profile }} {{ item.value.image }} {{ item.value.config }} > {{ item.key }}.log && \
     {{ kubify_cli }} post_to_slack "#deploys" "Deployed {{ item.key }} to {{ environment_name }}" "Deployed service {{ item.key }} with image <https://hub.docker.com/r/kubifyinc/{{ item.key }}/tags|{{ item.value.image }}> and config <https://github.com/kubify/kubify/tree/{{ item.value.config }}|{{ item.value.config }}> to {{ environment_name }} (<https://github.com/kubify/kubify/commit/${GITHUB_SHA}/checks|Logs>)" "good") || \
@@ -104,7 +104,7 @@
   with_dict: "{{ services_to_deploy }}"
   when: undeploy_env == "no" and (existing_kubify_version != kubify_version or existing_services[item.key] is not defined or (existing_services[item.key].profile != item.value.profile) or (existing_services[item.key].image != item.value.image) or (item.value.config != existing_services[item.key].config))
 
-- name: Undeploy services
+- name: Undeploy services (ESP: Anular la implementación de servicios)
   shell: |
     ({{ kubify_cli }} undeploy {{ item.key }} {{ target_cluster }} {{ environment_name }} {{ item.value.profile }} > {{ item.key }}.log && \
     {{ kubify_cli }} post_to_slack "#deploys" "Undeployed {{ item.key }} to {{ environment_name }}" "Undeployed service {{ item.key }} from {{ environment_name }} (<https://github.com/kubify/kubify/commit/${GITHUB_SHA}/checks|Logs>)" "good") || \
@@ -118,7 +118,7 @@
   with_dict: "{{ existing_services }}"
   when: undeploy_env == "no" and item.key not in services_to_deploy
 
-- name: Load environment manifest
+- name: Load environment manifest (ESP: Manifiesto del entorno de carga)
   shell: |
     kubectl apply -f {{ deploy_config_path }}
   when: undeploy_env == "no"
