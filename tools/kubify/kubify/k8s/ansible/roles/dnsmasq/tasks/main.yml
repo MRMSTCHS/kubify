@@ -1,6 +1,6 @@
 ---
 
-- name: check dnsmasq location - Linux
+- name: check dnsmasq location - Linux (ESP: comprobar la ubicación de dnsmasq - Linux)
   stat:
     path: /etc/NetworkManager/dnsmasq.d
   register: dnsmasq_linux_is_in_network_manager
@@ -13,7 +13,9 @@
     file_dnsmasq: "{{ 'dnsmasq.conf' if ansible_os_family == 'Darwin' else 'kubify.conf' }}"
 
 # TODO: what about when there is no networkmanager, make sure all edge cases are tested and stable..
-- name: create NetworkManager dnsmasq config for kubify
+# ESP: ¿Qué pasa cuando no hay un administrador de red, asegúrese de que todos los casos de borde estén probados y sean estables?
+
+- name: create NetworkManager dnsmasq config for kubify (ESP: crear la configuración de NetworkManager dnsmasq para kubify)
   become: yes
   file:
     path: "{{ dir_dnsmasq }}/{{ file_dnsmasq }}"
@@ -22,9 +24,12 @@
 
 ################################################################################
 # This part is configured in `kubify install` for Linux
+# ESP: Esta parte está configurada en `kubify install` para Linux
 ################################################################################
 #TODO (more urgent for WSL2): Do we need the linux versions of these?
-- name: Add *.{{ local_domain }} resolver port
+# ESP: TODO (más urgente para WSL2): ¿Necesitamos las versiones linux de estos?
+
+- name: Add *.{{ local_domain }} resolver port (ESP: Agregar puerto de resolución *. {{Local_domain}})
   become: yes
   lineinfile:
     state: present
@@ -35,7 +40,7 @@
     group: wheel
   when: ansible_os_family == "Darwin"
 
-- name: Add *.{{ local_domain }} resolver address
+- name: Add *.{{ local_domain }} resolver address (ESP: Agregar dirección de resolución de *. {{Local_domain}}
   become: yes
   lineinfile:
     state: present
@@ -46,7 +51,7 @@
     group: wheel
   when: ansible_os_family == "Darwin"
 
-- name: Add listen address config
+- name: Add listen address config (ESP: Agregar configuración de dirección de escucha)
   become: yes
   lineinfile:
     state: present
@@ -57,7 +62,7 @@
     group: wheel
   when: ansible_os_family == "Darwin"
 
-- name: Add listen port config
+- name: Add listen port config (ESP: Agregar configuración de puerto de escucha)
   become: yes
   lineinfile:
     state: present
@@ -70,7 +75,7 @@
   #
 ################################################################################
 
-- name: Remove stale resolver entries for *.{{ local_domain }}
+- name: Remove stale resolver entries for *.{{ local_domain }} (ESP: Elimina las entradas obsoletas del solucionador para *. {{Local_domain}})
   become: yes
   lineinfile:
     state: absent
@@ -79,7 +84,7 @@
     dest: "{{ dir_dnsmasq }}/{{ file_dnsmasq }}"
   register: config_change_1
 
-- name: Resolve *.{{ local_domain }} to Cluster IP
+- name: Resolve *.{{ local_domain }} to Cluster IP (ESP: Resolver *. {{Local_domain}} a la IP del clúster)
   become: yes
   lineinfile:
     state: present
@@ -88,18 +93,18 @@
     dest: "{{ dir_dnsmasq }}/{{ file_dnsmasq }}"
   register: config_change_2
 
-- name: Get dnsmasq PID
+- name: Get dnsmasq PID (ESP: Obtener dnsmasq PID)
   shell: "ps -ef | grep -v grep | grep /dnsmasq | awk '{print $2}'"
   register: running_processes
   when: ansible_os_family == "Darwin"
 
-- name: Kill dnsmasq
+- name: Kill dnsmasq (ESP: Mata a dnsmasq)
   shell: "kill {{ item }}"
   become: yes
   with_items: "{{ running_processes.stdout_lines }}"
   when: ansible_os_family == "Darwin"
 
-- name: Wait for dnsmasq to terminate
+- name: Wait for dnsmasq to terminate (ESP: Espere a que termine dnsmasq)
   wait_for:
     path: "/proc/{{ item }}/status"
     state: absent
@@ -108,23 +113,23 @@
   register: killed_processes
   when: ansible_os_family == "Darwin"
 
-- name: Ensure dnsmasq is really killed
+- name: Ensure dnsmasq is really killed (ESP: Asegúrese de que dnsmasq esté realmente eliminado) 
   become: yes
   shell: "kill -9 {{ item }}"
   with_items: "{{ killed_processes.results | select('failed') | map(attribute='item') | list }}"
   when: ansible_os_family == "Darwin"
 
-- name: Restart dnsmasq as user (for running)
+- name: Restart dnsmasq as user (for running) (ESP: Reinicie dnsmasq como usuario (para ejecutar)) 
   become: no
   command: brew services restart dnsmasq
   when: ansible_os_family == "Darwin"
 
-- name: Restart dnsmasq as sudo (to also enable start on boot)
+- name: Restart dnsmasq as sudo (to also enable start on boot) (ESP: Reinicie dnsmasq como sudo (para habilitar también el inicio en el arranque))
   become: yes
   command: brew services restart dnsmasq
   when: ansible_os_family == "Darwin"
 
-- name: restart NetworkManager (dnsmasq) for Ubuntu
+- name: restart NetworkManager (dnsmasq) for Ubuntu (ESP: reinicie NetworkManager (dnsmasq) para Ubuntu)
   become: yes
   systemd:
     name: NetworkManager
@@ -135,7 +140,9 @@
     - config_change_1.changed or config_change_2.changed
 
 # This tries to open an internet connection for up to 30 seconds before failure.
-- name: wait for network connection to come back up
+# ESP: Esto intenta abrir una conexión a Internet por hasta 30 segundos antes de fallar.
+
+- name: wait for network connection to come back up (ESP: espere a que vuelva la conexión de red)
   wait_for:
     host: 8.8.8.8
     port: 53
