@@ -1,20 +1,20 @@
 ---
-- name: Ensure common secrets work directory exists
+- name: Ensure common secrets work directory exists (ESP: Asegúrese de que exista un directorio de trabajo de secretos comunes)
   file:
     path: "{{ kubify_dir }}/{{ env }}/common/manifests"
     state: directory
 
-- name: Decrypt common secrets
+- name: Decrypt common secrets (ESP: Descifrar secretos comunes)
   shell: "kubesec decrypt {{ item.src }} > {{ item.dest }}"
   with_items:
     - { src: "{{ app_dir }}/../../tools/common/secrets/secrets.{{ env }}.enc.yaml", dest: "{{ kubify_dir }}/{{ env }}/common/manifests/secrets.yaml"}
 
-- name: Ensure common config directory exists
+- name: Ensure common config directory exists (ESP: Asegúrese de que exista un directorio de configuración común)
   file:
     path: "{{ app_dir }}/../../tools/common/config/"
     state: directory
 
-- name: Generate config
+- name: Generate config (ESP: Generar configuración)
   template:
     src: "{{ item[0].src }}"
     dest: "{{ item[0].dest }}/config.{{ item[1] }}.yaml"
