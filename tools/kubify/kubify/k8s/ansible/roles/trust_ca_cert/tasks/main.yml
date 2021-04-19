@@ -1,4 +1,4 @@
-- name: Install and trust the local cluster certificate
+- name: Install and trust the local cluster certificate (ESP: Instale y confíe en el certificado de clúster local)
   shell: /usr/bin/security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain {{ ca_cert_path }}
   become: true
   when: ansible_os_family == "Darwin"
