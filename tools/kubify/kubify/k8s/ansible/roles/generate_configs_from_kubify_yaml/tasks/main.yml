@@ -67,7 +67,7 @@
   vars:
     app_manifests: "{{ app_kubify_dir }}/manifests"
     manifests_glob:
-      - "../../{{ kubify_dir | basename }}/{{ env }}/{{ app_name }}/manifests/*" # skaffold needs a relative path to the manifests
+      - "../../{{ kubify_dir | basename }}/{{ env }}/{{ app_name }}/manifests/*" # skaffold needs a relative path to the manifests #ESP: skaffold necesita un camino relativo a los manifiestos) 
       - "../../{{ app_type }}/{{ app_name }}/config/*.{{ profile }}.yaml"
       - "../../{{ app_type }}/{{ app_name }}/kubify.yml"
 
