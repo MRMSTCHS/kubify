@@ -1,18 +1,18 @@
 ---
-- name: Remove kubify work directory
+- name: Remove kubify work directory (ESP: Eliminar el directorio de trabajo de kubify)
   file:
     path: "{{ app_kubify_dir }}"
     state:  absent
 
-- name: Create kubify work directory
+- name: Create kubify work directory (ESP: Crear directorio de trabajo de kubify)
   file:
     path: "{{ app_kubify_dir }}"
     state: directory
 
-- name: Create kubify work manifests directory
+- name: Create kubify work manifests directory (ESP: Crear directorio de manifiestos de trabajo de kubify)
   file:
     path: "{{ app_kubify_dir }}/manifests"
     state: directory
 
-- name: Create common manifests
+- name: Create common manifests (ESP: Crea manifiestos comunes)
   include_tasks: common.yaml
