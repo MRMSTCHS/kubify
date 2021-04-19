@@ -1,5 +1,5 @@
 ---
-- name: Update .dockerignore
+- name: Update .dockerignore (ESP: Actualizar .dockerignore)
   lineinfile:
     path: "{{ app_dir }}/.dockerignore"
     state: present
@@ -12,17 +12,17 @@
     - { regexp: '^/secrets', line: '/secrets'}
     - { regexp: '^/config', line: '/config'}
 
-- name: Check if project has custom dev Dockerfile
+- name: Check if project has custom dev Dockerfile (ESP: Compruebe si el proyecto tiene un Dockerfile de desarrollo personalizado)
   stat:
     path: "{{ app_dir }}/Dockerfile.dev"
   register: custom_dev_docker_stat_result
 
-- name: Check if project has custom build Dockerfile
+- name: Check if project has custom build Dockerfile (ESP: Compruebe si el proyecto tiene una compilación personalizada de Dockerfile)
   stat:
     path: "{{ app_dir }}/Dockerfile.build"
   register: custom_build_docker_stat_result
 
-- name: Generate Dockerfiles
+- name: Generate Dockerfiles (ESP: Generar Dockerfiles)
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -31,7 +31,7 @@
     - { src: "templates/Dockerfile.build.j2", dest: "{{ app_kubify_dir }}/Dockerfile.build" }
   when: custom_dev_docker_stat_result.stat.exists == False and custom_build_docker_stat_result.stat.exists == False
 
-- name: Copy Dockerfiles
+- name: Copy Dockerfiles (ESP: Copiar Dockerfiles)
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -40,19 +40,19 @@
     - { src: "{{ app_dir }}/Dockerfile.build", dest: "{{ app_kubify_dir }}/Dockerfile.build" }
   when: custom_dev_docker_stat_result.stat.exists == True and custom_build_docker_stat_result.stat.exists == True
 
-- name: Ensure config directory exists
+- name: Ensure config directory exists (ESP: Asegúrese de que exista el directorio de configuración)
   file:
     path: "{{ app_dir }}/config/"
     state: directory
 
-- name: Checkout config
+- name: Checkout config (ESP: Configuración de pago)
   shell: git checkout {{ app_config_sha }} {{ item }}
   with_items:
     - "{{ app_dir }}/config"
     - "{{ app_dir }}/secrets"
   when: app_config_sha != ""
 
-- name: Generate manifests
+- name: Generate manifests (ESP: Generar manifiestos)
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -71,7 +71,7 @@
       - "../../{{ app_type }}/{{ app_name }}/config/*.{{ profile }}.yaml"
       - "../../{{ app_type }}/{{ app_name }}/kubify.yml"
 
-- name: Decrypt secrets
+- name: Decrypt secrets (ESP: Descifrar secretos)
   shell: "kubesec decrypt {{ item.src }} > {{ item.dest }}"
   with_items:
     - { src: "{{ app_dir }}/../{{ app_name }}/secrets/secrets.{{ profile }}.enc.yaml", dest: "{{ app_kubify_dir }}/manifests/secrets.yaml"}
