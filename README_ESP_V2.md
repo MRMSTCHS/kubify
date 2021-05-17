@@ -15,7 +15,7 @@ Piense en la incorporación reducida de semanas a solo 5 minutos. Eso debería d
 
 Este es un software revolucionario de DevOps llave en mano GRATUITO. 
 
-Si usa Kubify, asegúrese de donar: [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate?business=MSRFJHSGCKGCG&item_name=Kubify&currency_code=USD)
+Si usa Kubify, asegúrese de donar: [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donar?business=MSRFJHSGCKGCG&item_name=Kubify&currency_code=USD)
 
 
 # Configuración
